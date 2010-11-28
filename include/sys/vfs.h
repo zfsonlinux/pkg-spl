@@ -48,7 +48,11 @@ typedef struct vfs {
 
 #define MAXFIDSZ	64
 
+#if defined(HAVE_ZPL)
 typedef struct fid {
+#else
+typedef struct zfs_fid {
+#endif
 	union {
 		long fid_pad;
 		struct {

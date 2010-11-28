@@ -26,6 +26,7 @@
 #include <linux/exportfs.h>
 #include <linux/stddef.h>
 
+#if 0
 struct lzfs_fid {
         u64 ino;
         u32 gen;
@@ -33,6 +34,10 @@ struct lzfs_fid {
         u64 parent_ino;
         u32 parent_gen;
 } __attribute__((packed));
+#else
+typedef fid_t lzfs_fid_t;
+#endif
+
 
 extern const struct export_operations zfs_export_ops;
 
