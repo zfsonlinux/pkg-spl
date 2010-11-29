@@ -71,6 +71,7 @@ vn_get_sol_type(umode_t mode)
 
 	return VNON;
 } /* vn_get_sol_type() */
+EXPORT_SYMBOL(vn_get_sol_type);
 
 mode_t
 vn_vtype_to_if(vtype_t vtype)
