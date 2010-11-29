@@ -42,7 +42,7 @@ static spl_kmem_cache_t *vn_file_cache;
 static spinlock_t vn_file_lock = SPIN_LOCK_UNLOCKED;
 static LIST_HEAD(vn_file_list);
 
-static vtype_t
+vtype_t
 vn_get_sol_type(umode_t mode)
 {
 	if (S_ISREG(mode))

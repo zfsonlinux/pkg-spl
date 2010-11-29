@@ -255,7 +255,7 @@ extern file_t *vn_getf(int fd);
 extern void vn_releasef(int fd);
 extern int vn_set_pwd(const char *filename);
 extern mode_t vn_vtype_to_if(vtype_t);
-extern vtype_t vn_get_sol_type(mode_t);
+extern vtype_t vn_get_sol_type(umode_t);
 extern void vn_exists(vnode_t *);
 int vn_init(void);
 extern void vn_invalid(vnode_t *);
