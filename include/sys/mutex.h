@@ -36,6 +36,7 @@ typedef enum {
 } kmutex_type_t;
 
 #if defined(HAVE_MUTEX_OWNER) && defined(CONFIG_SMP)
+
 typedef struct mutex kmutex_t;
 
 static inline kthread_t *
@@ -80,8 +81,8 @@ mutex_owned(kmutex_t *mp)
 #ifdef CONFIG_DEBUG_MUTEXES
 # define mutex_exit(mp)                                                 \
 ({                                                                      \
-         (mp)->owner = NULL;                                            \
-	 mutex_unlock(mp);                                              \
+        mutex_unlock(mp);                                               \
+        (mp)->owner = NULL;                                             \
 })
 #else
 # define mutex_exit(mp)                 mutex_unlock(mp)
@@ -99,8 +100,6 @@ typedef struct {
         struct mutex m_mutex;
         kthread_t *m_owner;
 } kmutex_t;
-
-#eqwdewqd
 
 #ifdef HAVE_TASK_CURR
 extern int spl_mutex_spin_max(void);

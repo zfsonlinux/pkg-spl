@@ -42,6 +42,36 @@ static spl_kmem_cache_t *vn_file_cache;
 static spinlock_t vn_file_lock = SPIN_LOCK_UNLOCKED;
 static LIST_HEAD(vn_file_list);
 
+static vtype_t
+vn_get_sol_type(umode_t mode)
+{
+	if (S_ISREG(mode))
+		return VREG;
+
+	if (S_ISDIR(mode))
+		return VDIR;
+
+	if (S_ISCHR(mode))
+		return VCHR;
+
+	if (S_ISBLK(mode))
+		return VBLK;
+
+	if (S_ISFIFO(mode))
+		return VFIFO;
+
+	if (S_ISLNK(mode))
+		return VLNK;
+
+	if (S_ISSOCK(mode))
+		return VSOCK;
+
+	if (S_ISCHR(mode))
+		return VCHR;
+
+	return VNON;
+} /* vn_get_sol_type() */
+
 mode_t
 vn_vtype_to_if(vtype_t vtype)
 {
@@ -108,7 +138,6 @@ specvp(struct vnode *vp, dev_t dev, vtype_t type, struct cred *cr)
 }
 EXPORT_SYMBOL(specvp);
 
-
 vnode_t *
 vn_alloc(int flag)
 {
@@ -122,18 +151,6 @@ vn_alloc(int flag)
 	}
 
 	SRETURN(vp);
-#if 0
-	vnode_t *vp = NULL;
-	ENTRY;
-	vp = kzalloc(sizeof (vnode_t), KM_SLEEP);
-	if (!vp) {
-		return NULL;
-	}
-	mutex_init(&vp->v_lock, NULL, MUTEX_DEFAULT, NULL);
-	inode_init_once(LZFS_VTOI(vp));
-	LZFS_VTOI(vp)->i_version = 1;
-
-#endif
 } /* vn_alloc() */
 EXPORT_SYMBOL(vn_alloc);
 
@@ -143,10 +160,6 @@ vn_free(vnode_t *vp)
 	SENTRY;
 	kmem_cache_free(vn_cache, vp);
 	SEXIT;
-#if 0
-	ENTRY;
-	kfree(vp);
-#endif
 } /* vn_free() */
 EXPORT_SYMBOL(vn_free);
 
@@ -252,9 +265,6 @@ vn_rdwr(uio_rw_t uio, vnode_t *vp, void *addr, ssize_t len, offset_t off,
 	ASSERT(vp->v_file);
 	ASSERT(seg == UIO_SYSSPACE);
 	ASSERT((ioflag & ~FAPPEND) == 0);
-#ifdef HAVE_ZPL
-        ASSERT(x1 == 0);
-#endif /* HAVE_ZPL */
 	ASSERT(x2 == RLIM64_INFINITY);
 
 	fp = vp->v_file;
@@ -672,16 +682,24 @@ EXPORT_SYMBOL(releasef);
 void
 set_fs_pwd(struct fs_struct *fs, struct path *path)
 {
-        struct path old_pwd;
+	struct path old_pwd;
 
-        write_lock(&fs->lock);
-        old_pwd = fs->pwd;
-        fs->pwd = *path;
-        path_get(path);
-        write_unlock(&fs->lock);
+#  ifdef HAVE_FS_STRUCT_SPINLOCK
+	spin_lock(&fs->lock);
+	old_pwd = fs->pwd;
+	fs->pwd = *path;
+	path_get(path);
+	spin_unlock(&fs->lock);
+#  else
+	write_lock(&fs->lock);
+	old_pwd = fs->pwd;
+	fs->pwd = *path;
+	path_get(path);
+	write_unlock(&fs->lock);
+#  endif /* HAVE_FS_STRUCT_SPINLOCK */
 
-        if (old_pwd.dentry)
-                path_put(&old_pwd);
+	if (old_pwd.dentry)
+		path_put(&old_pwd);
 }
 # else
 /* Used from 2.6.11 - 2.6.24 */
@@ -851,33 +869,6 @@ vn_has_cached_data(vnode_t *vp)
 }
 EXPORT_SYMBOL(vn_has_cached_data);
 
-vtype_t
-vn_get_sol_type(mode_t mode)
-{
-	if (S_ISREG(mode))
-		return VREG;
-
-	if (S_ISDIR(mode))
-		return VDIR;
-
-	if (S_ISCHR(mode))
-		return VCHR;
-
-	if (S_ISBLK(mode))
-		return VBLK;
-
-	if (S_ISFIFO(mode))
-		return VFIFO;
-
-	if (S_ISLNK(mode))
-		return VLNK;
-
-	if (S_ISSOCK(mode))
-		return VSOCK;
-
-	return VNON;
-} /* vn_get_sol_type() */
-EXPORT_SYMBOL(vn_get_sol_type);
 
 /* A placeholder for now. Might be sufficient, need to check again.
  */ 
@@ -941,6 +932,7 @@ vn_fini(void)
 		SWARN("Warning %d files leaked\n", leaked);
 
 	kmem_cache_destroy(vn_cache);
+
 	SEXIT;
 	return;
 } /* vn_fini() */
