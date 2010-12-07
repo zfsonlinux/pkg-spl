@@ -1,5 +1,7 @@
 #ifndef _LZFS_XATTR_H
 #define _LZFS_XATTR_H
+#include <linux/version.h>
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,35)
 
 extern struct xattr_handler *lzfs_xattr_handlers[];
 
@@ -18,5 +20,6 @@ lzfs_removexattr(struct dentry *dentry, const char *name);
 
 int
 lzfs_init_security(struct inode *inode, struct inode *dir);
+#endif
 #endif /* _LZFS_XATTR_H */
 
