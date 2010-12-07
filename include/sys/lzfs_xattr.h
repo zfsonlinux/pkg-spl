@@ -21,9 +21,7 @@ lzfs_xattr_get(struct inode *inode, const char *name,
 int
 lzfs_removexattr(struct dentry *dentry, const char *name);
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,35)
 int
-lzfs_init_security(struct inode *inode, struct inode *dir);
-#endif
+lzfs_init_security(struct dentry *dentry, struct inode *dir);
 #endif /* _LZFS_XATTR_H */
 
