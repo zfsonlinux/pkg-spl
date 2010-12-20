@@ -1065,6 +1065,19 @@ spl_debug_get_mb(void)
 }
 EXPORT_SYMBOL(spl_debug_get_mb);
 
+void spl_printk(char *buf)
+{
+	printk(buf);
+}
+EXPORT_SYMBOL(spl_printk);
+
+void spl_debug_mydumpstack(char *mesg, struct task_struct *tsk)
+{
+	printk("SPL:dump:stack %s\n", mesg);
+	spl_debug_dumpstack(tsk);
+}
+EXPORT_SYMBOL(spl_debug_mydumpstack);
+
 void spl_debug_dumpstack(struct task_struct *tsk)
 {
         extern void show_task(struct task_struct *);

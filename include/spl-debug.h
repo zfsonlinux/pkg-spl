@@ -181,6 +181,8 @@ extern int spl_debug_set_mb(int mb);
 extern int spl_debug_get_mb(void);
 extern int spl_debug_dumplog(int flags);
 extern void spl_debug_dumpstack(struct task_struct *tsk);
+extern void spl_debug_mydumpstack(char *mesg, struct task_struct *tsk);
+extern void spl_printk(char *buf);
 extern int spl_debug_clear_buffer(void);
 extern int spl_debug_mark_buffer(char *text);
 
