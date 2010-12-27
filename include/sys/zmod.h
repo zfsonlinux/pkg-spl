@@ -74,6 +74,7 @@ z_compress_level(void *dest, size_t *destLen, const void *source,
 {
 	z_stream stream;
 	int err;
+	size_t size;
 
 	stream.next_in = (Byte *)source;
 	stream.avail_in = (uInt)sourceLen;
@@ -88,18 +89,29 @@ z_compress_level(void *dest, size_t *destLen, const void *source,
 	if ((size_t)stream.avail_out != *destLen)
 		return Z_BUF_ERROR;
 
+	size = max(zlib_deflate_workspacesize(),
+		zlib_inflate_workspacesize());
+	stream.workspace = vmalloc(size);
+	if (!stream.workspace)
+		return Z_MEM_ERROR;
+
 	err = zlib_deflateInit(&stream, level);
-	if (err != Z_OK)
+	if (err != Z_OK) {
+		vfree(stream.workspace);
 		return err;
+	}
 
 	err = zlib_deflate(&stream, Z_FINISH);
 	if (err != Z_STREAM_END) {
 		zlib_deflateEnd(&stream);
+		vfree(stream.workspace);
 		return err == Z_OK ? Z_BUF_ERROR : err;
 	}
 	*destLen = stream.total_out;
 
 	err = zlib_deflateEnd(&stream);
+	vfree(stream.workspace);
+
 	return err;
 } /* z_compress_level() */
 
@@ -123,6 +135,7 @@ z_uncompress(void *dest, size_t *destLen, const void *source, size_t sourceLen)
 {
 	z_stream stream;
 	int err;
+	size_t size;
 
 	stream.next_in = (Byte *)source;
 	stream.avail_in = (uInt)sourceLen;
@@ -136,13 +149,22 @@ z_uncompress(void *dest, size_t *destLen, const void *source, size_t sourceLen)
 	if ((size_t)stream.avail_out != *destLen)
 		return Z_BUF_ERROR;
 
+	size = max(zlib_deflate_workspacesize(),
+		zlib_inflate_workspacesize());
+	stream.workspace = vmalloc(size);
+	if (!stream.workspace)
+		return Z_MEM_ERROR;
+
 	err = zlib_inflateInit(&stream);
-	if (err != Z_OK)
+	if (err != Z_OK) {
+		vfree(stream.workspace);
 		return err;
+	}
 
 	err = zlib_inflate(&stream, Z_FINISH);
 	if (err != Z_STREAM_END) {
 		zlib_inflateEnd(&stream);
+		vfree(stream.workspace);
 
 		if (err == Z_NEED_DICT ||
 		   (err == Z_BUF_ERROR && stream.avail_in == 0))
@@ -153,6 +175,8 @@ z_uncompress(void *dest, size_t *destLen, const void *source, size_t sourceLen)
 	*destLen = stream.total_out;
 
 	err = zlib_inflateEnd(&stream);
+	vfree(stream.workspace);
+
 	return err;
 } /* z_uncompress() */
 
