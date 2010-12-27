@@ -44,6 +44,7 @@ typedef struct vfs {
 						 * block */
 	struct vfsmount *vfsmnt;
 	void (*vfs_set_inode_ops)(struct inode *inode); /* set inode ops */
+	struct dentry	*vfs_mntpt;		/* store mounted over dentry for snap */
 } vfs_t;
 
 #define MAXFIDSZ	64
