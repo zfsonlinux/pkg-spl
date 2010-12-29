@@ -163,7 +163,7 @@ spl_debug_subsys2str(int subsys)
         case SS_USER1:
                 return "user1";
         case SS_USER2:
-                return "user2";
+                return "lzfs";
         case SS_USER3:
                 return "user3";
         case SS_USER4:
