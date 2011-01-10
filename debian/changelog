@@ -1,7 +1,8 @@
-spl (0.5-1) unstable; urgency=low
+spl (0.5-2) unstable; urgency=low
 
-  * Initial release (Closes: #nnnn)  <nnnn is the bug number of your ITP>
-  * Switch to dpkg-source 3.0 (quilt) format
-  * Switch to dpkg-source 3.0 (quilt) format
+  * Downoad the source code from https://github.com/zfs-linux/spl.
+  * Look at the META for the commit id
+  * Do a checkout for that commit id. "git checkout <commit id>"
+  * Use the git commit logs for a full records of changes: 'git log'
 
- -- kqinfo <kqinfo@kqinfo-desktop>  Wed, 17 Nov 2010 12:10:59 +0530
+ -- kqinfo <zfs@kqinfotech.com>  Mon, 10 Jan 2011 12:10:59 +0530

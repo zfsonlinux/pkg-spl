@@ -31,7 +31,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-, root, root)
-%doc AUTHORS ChangeLog COPYING DISCLAIMER INSTALL
+%doc AUTHORS ChangeLog COPYING DISCLAIMER INSTALL META
 %{_sbindir}/*
 
 %post

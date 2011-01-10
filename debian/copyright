@@ -1,35 +1,45 @@
 This work was packaged for Debian by:
 
-    kqinfo <kqinfo@kqinfotech.com> on Wed, 17 Nov 2010 11:16:05 +0530
+    KQ Infotech <zfs@kqinfotech.com> on Mon, 10 Jan 2011 11:16:05 +0530
 
-It was downloaded from <url://example.com>
+It was downloaded from git@github.com:zfs-linux/spl.git
 
 Upstream Author(s):
 
-    <put author's name and email here>
-    <likewise for another author>
+    Brian Behlendorf <behlendorf1@llnl.gov>
+    Ricardo M. Correia <Ricardo.M.Correia@Sun.COM>
+    Chris Dunlap <cdunlap@llnl.gov>
+    KQ Infotech <zfs@kqinfotech.com>
 
 Copyright:
 
-    <Copyright (C) YYYY Name OfAuthor>
-    <likewise for another author>
+    Copyright (C) 2007-2010 Lawrence Livermore National Security, LLC.
+    Copyright (C) 2007 The Regents of the University of California.
+    Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
+    Written by Brian Behlendorf <behlendorf1@llnl.gov>.
+    UCRL-CODE-235197
+
+    This file is part of the SPL, Solaris Porting Layer.
+    For details, see <http://github.com/behlendorf/spl/>.
+
+    The SPL is free software; you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by the
+    Free Software Foundation; either version 2 of the License, or (at your
+    option) any later version.
+    The SPL is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+    for more details.
+    
+    You should have received a copy of the GNU General Public License along
+    with the SPL.  If not, see <http://www.gnu.org/licenses/>.
 
 License:
 
-    <Put the license of the package here indented by 4 spaces>
+    GPL
 
 The Debian packaging is:
-
-    Copyright (C) 2010 kqinfo <kqinfo@kqinfotech.com>
-
-# Please chose a license for your packaging work. If the program you package
-# uses a mainstream license, using the same license is the safest choice.
-# Please avoid to pick license terms that are more restrictive than the
-# packaged work, as it may make Debian's contributions unacceptable upstream.
-# If you just want it to be GPL version 3, leave the following lines in.
-
-and is licensed under the GPL version 3, 
-see `/usr/share/common-licenses/GPL-3'.
-
-# Please also look if there are files or directories which have a
-# different copyright/license attached and list them here.
+    Copyright (c) 2010 Knowledge Quest Infotech Pvt. Ltd. 
+    Produced at Knowledge Quest Infotech Pvt. Ltd. 
+    Written by: Knowledge Quest Infotech Pvt. Ltd. 
+                zfs@kqinfotech.com
