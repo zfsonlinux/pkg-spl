@@ -1,4 +1,4 @@
-spl (0.5-2) unstable; urgency=low
+spl (0.5.2-2) unstable; urgency=low
 
   * Downoad the source code from https://github.com/zfs-linux/spl.
   * Look at the META for the commit id
