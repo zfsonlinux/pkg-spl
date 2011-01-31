@@ -74,6 +74,8 @@ AC_DEFUN([SPL_AC_CONFIG_KERNEL], [
 	SPL_AC_KVASPRINTF
 	SPL_AC_3ARGS_FILE_FSYNC
 	SPL_AC_EXPORTED_RWSEM_IS_LOCKED
+	SPL_AC_3ARGS_BLKDEV_GET
+	SPL_AC_1ARGS_BLKDEV_PUT  	
 ])
 
 AC_DEFUN([SPL_AC_MODULE_SYMVERS], [
@@ -1680,3 +1682,44 @@ AC_DEFUN([SPL_AC_EXPORTED_RWSEM_IS_LOCKED], [
 		[rwsem_is_locked() acquires sem->wait_lock])],
 		[])
 ])
+
+
+
+dnl #
+dnl # 2.6.26 API change,
+dnl # change in blkdev_get
+dnl #
+AC_DEFUN([SPL_AC_3ARGS_BLKDEV_GET], [
+        AC_MSG_CHECKING([whether blkdev_get() wants 3 args])
+        SPL_LINUX_TRY_COMPILE([
+                #include <linux/fs.h>
+        ],[
+                blkdev_get(NULL, NULL, 0);
+        ],[
+                AC_MSG_RESULT(yes)
+                AC_DEFINE(HAVE_3ARGS_BLKDEV_GET, 1,
+                          [blkdev_get() wants 3 args])
+        ],[
+                AC_MSG_RESULT(no)
+        ])
+])
+
+dnl #
+dnl # 2.6.26 API change,
+dnl # change in blkdev_put
+dnl #
+AC_DEFUN([SPL_AC_1ARGS_BLKDEV_PUT], [
+        AC_MSG_CHECKING([whether blkdev_put() wants 1 args])
+        SPL_LINUX_TRY_COMPILE([
+                #include <linux/fs.h>
+        ],[
+                blkdev_put(NULL);
+        ],[
+                AC_MSG_RESULT(yes)
+                AC_DEFINE(HAVE_1ARGS_BLKDEV_PUT, 1,
+                          [blkdev_put() wants 1 args])
+        ],[
+                AC_MSG_RESULT(no)
+        ])
+])
+
