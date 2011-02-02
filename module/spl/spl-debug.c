@@ -1080,6 +1080,12 @@ void spl_debug_mydumpstack(char *mesg, struct task_struct *tsk)
 }
 EXPORT_SYMBOL(spl_debug_mydumpstack);
 
+#ifdef NDEBUG /*  debugging Disabled */
+void spl_debug_dumpstack(struct task_struct *tsk)
+{
+    return ;
+}
+#else /* Debugging Enabled */
 void spl_debug_dumpstack(struct task_struct *tsk)
 {
         extern void show_task(struct task_struct *);
@@ -1090,6 +1096,7 @@ void spl_debug_dumpstack(struct task_struct *tsk)
         printk("SPL: Showing stack for process %d\n", tsk->pid);
         dump_stack();
 }
+#endif
 EXPORT_SYMBOL(spl_debug_dumpstack);
 
 void spl_debug_bug(char *file, const char *func, const int line, int flags)
