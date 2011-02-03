@@ -11,4 +11,4 @@
 
 %:
 	dh  $@
-
+	dh_auto_configure -- --disable-debug-kmem
