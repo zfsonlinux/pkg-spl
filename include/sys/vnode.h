@@ -214,7 +214,7 @@ typedef struct vnode {
 	(vp)->v_rdev = (dev); \
 }
 
-vnode_t *specvp(struct vnode *vp, dev_t dev, vtype_t type, struct cred *cr);
+vnode_t *specvp(struct vnode *vp, dev_t dev, vtype_t type, cred_t *cr);
 
 #define LZFS_ITOV(inode)	(container_of(inode, vnode_t, v_inode))
 #define LZFS_VTOI(vp)	(&(vp)->v_inode)
@@ -341,47 +341,47 @@ extern vnode_t *rootdir;
 
 
 void
-zfs_inactive(vnode_t *vp, struct cred *cr, caller_context_t *ct);
+zfs_inactive(vnode_t *vp, cred_t *cr, caller_context_t *ct);
 
 int
 zfs_lookup(vnode_t *dvp, char *nm, vnode_t **vpp, struct pathname *pnp,
-    int flags, vnode_t *rdir, struct cred *cr,  caller_context_t *ct,
+    int flags, vnode_t *rdir, cred_t *cr,  caller_context_t *ct,
     int *direntflags, pathname_t *realpnp);
 
 int
 zfs_create(vnode_t *dvp, char *name, vattr_t *vap, vcexcl_t excl,
-    int mode, vnode_t **vpp, struct cred *cr, int flag, caller_context_t *ct,
+    int mode, vnode_t **vpp, cred_t *cr, int flag, caller_context_t *ct,
     vsecattr_t *vsecp);
 
 int
-zfs_readdir(vnode_t *vp, uio_t *uio, struct cred *cr, int *eofp,
+zfs_readdir(vnode_t *vp, uio_t *uio, cred_t *cr, int *eofp,
 	    caller_context_t *ct, int flags, filldir_t filldir, uint64_t *pos);
 
 int
-zfs_link(vnode_t *tdvp, vnode_t *svp, char *name, struct cred *cr,
+zfs_link(vnode_t *tdvp, vnode_t *svp, char *name, cred_t *cr,
 	 caller_context_t *ct, int flags);
 int
-zfs_remove(vnode_t *dvp, char *name, struct cred *cr, caller_context_t *ct,
+zfs_remove(vnode_t *dvp, char *name, cred_t *cr, caller_context_t *ct,
 	   int flags);
 int
 zfs_mkdir(vnode_t *dvp, char *dirname, vattr_t *vap, vnode_t **vpp, 
-	  struct cred *cr,
+	  cred_t *cr,
 	  caller_context_t *ct, int flags, vsecattr_t *vsecp);
 int
-zfs_rmdir(vnode_t *dvp, char *name, vnode_t *cwd, struct cred *cr,
+zfs_rmdir(vnode_t *dvp, char *name, vnode_t *cwd, cred_t *cr,
 	  caller_context_t *ct, int flags);
 int
 zfs_symlink(vnode_t *dvp, char *name, vattr_t *vap, char *link, 
-	    struct cred *cr,
+	    cred_t *cr,
 	    caller_context_t *ct, int flags, vnode_t **vpp);
 int
-zfs_rename(vnode_t *sdvp, char *snm, vnode_t *tdvp, char *tnm, struct cred *cr,
+zfs_rename(vnode_t *sdvp, char *snm, vnode_t *tdvp, char *tnm, cred_t *cr,
 	   caller_context_t *ct, int flags);
 int
-zfs_setattr(vnode_t *vp, vattr_t *vap, int flags, struct cred *cr,
+zfs_setattr(vnode_t *vp, vattr_t *vap, int flags, cred_t *cr,
 	    caller_context_t *ct);
 int
-zfs_readlink(vnode_t *vp, uio_t *uio, struct cred *cr, caller_context_t *ct);
+zfs_readlink(vnode_t *vp, uio_t *uio, cred_t *cr, caller_context_t *ct);
 
 int
 zfs_read(vnode_t *vp, uio_t *uio, int ioflag,  cred_t *cr,
@@ -396,16 +396,16 @@ zfs_write(vnode_t *vp, uio_t *uio, int ioflag, cred_t *cr,
 	  caller_context_t *ct);
 
 int
-zfs_getattr(vnode_t *vp, vattr_t *vap, int flags, struct cred *cr,
+zfs_getattr(vnode_t *vp, vattr_t *vap, int flags, cred_t *cr,
 		    caller_context_t *ct);
 int
-zfs_fsync(vnode_t *vp, int syncflag, struct cred *cr,
+zfs_fsync(vnode_t *vp, int syncflag, cred_t *cr,
 		    caller_context_t *ct);
 void
 xva_init(xvattr_t *xvap);
 
 int zfs_space(vnode_t *vp, int cmd, flock64_t *bfp, int flag,
-    offset_t offset, struct cred *cr, caller_context_t *ct);
+    offset_t offset, cred_t *cr, caller_context_t *ct);
 
 #ifdef  __cplusplus
 }

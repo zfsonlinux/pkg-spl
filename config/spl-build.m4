@@ -75,7 +75,8 @@ AC_DEFUN([SPL_AC_CONFIG_KERNEL], [
 	SPL_AC_3ARGS_FILE_FSYNC
 	SPL_AC_EXPORTED_RWSEM_IS_LOCKED
 	SPL_AC_3ARGS_BLKDEV_GET
-	SPL_AC_1ARGS_BLKDEV_PUT  	
+	SPL_AC_1ARGS_BLKDEV_PUT 
+	SPL_AC_2ARGS_FOLLOW_DOWN 	
 ])
 
 AC_DEFUN([SPL_AC_MODULE_SYMVERS], [
@@ -1718,6 +1719,26 @@ AC_DEFUN([SPL_AC_1ARGS_BLKDEV_PUT], [
                 AC_MSG_RESULT(yes)
                 AC_DEFINE(HAVE_1ARGS_BLKDEV_PUT, 1,
                           [blkdev_put() wants 1 args])
+        ],[
+                AC_MSG_RESULT(no)
+        ])
+])
+
+
+dnl #
+dnl # 2.6.26 API change,
+dnl # change in follow_down
+dnl #
+AC_DEFUN([SPL_AC_2ARGS_FOLLOW_DOWN], [
+        AC_MSG_CHECKING([whether follow_down() wants 2 args])
+        SPL_LINUX_TRY_COMPILE([
+                #include <linux/namei.h>
+        ],[
+                follow_down(NULL, NULL);
+        ],[
+                AC_MSG_RESULT(yes)
+                AC_DEFINE(HAVE_2ARGS_FOLLOW_DOWN, 1,
+                          [follow_down() wants 2 args])
         ],[
                 AC_MSG_RESULT(no)
         ])

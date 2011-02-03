@@ -41,8 +41,12 @@ typedef struct cred cred_t;
 
 typedef struct task_struct cred_t;
 
-#define kcred		((cred_t *)&init_task)
-#define CRED()		((cred_t *)current)
+#define kcred			((cred_t *)&init_task)
+#define CRED()			((cred_t *)current)
+#define current_fsuid(cred)     (current->fsuid)
+#define current_fsgid(cred)     (current->fsgid)
+#define put_cred(cred)           NULL 
+#define get_current_cred()      ((cred_t *)(get_current))
 
 #endif /* HAVE_CRED_STRUCT */
 

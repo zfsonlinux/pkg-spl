@@ -12,6 +12,9 @@
 /* blkdev_put() wants 1 args */
 #undef HAVE_1ARGS_BLKDEV_PUT
 
+/* follow_down() wants 2 args */
+#undef HAVE_2ARGS_FOLLOW_DOWN
+
 /* register_sysctl_table() wants 2 args */
 #undef HAVE_2ARGS_REGISTER_SYSCTL
 

@@ -131,7 +131,7 @@ EXPORT_SYMBOL(vn_get_lin_type);
  * inode device type in this function
  */
 vnode_t *
-specvp(struct vnode *vp, dev_t dev, vtype_t type, struct cred *cr)
+specvp(struct vnode *vp, dev_t dev, vtype_t type, cred_t *cr)
 {
 	VN_HOLD(vp);
 	init_special_inode(&vp->v_inode,vn_get_lin_type(type) , dev);
