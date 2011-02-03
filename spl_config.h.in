@@ -75,6 +75,9 @@
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
 
+/* d_alloc_anon() is available */
+#undef HAVE_D_ALLOC_ANON
+
 /* linux/fdtable.h exists */
 #undef HAVE_FDTABLE_HEADER
 
