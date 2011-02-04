@@ -186,6 +186,7 @@ extern void spl_debug_mydumpstack(char *mesg, struct task_struct *tsk);
 extern void spl_printk(char *buf);
 extern int spl_debug_clear_buffer(void);
 extern int spl_debug_mark_buffer(char *text);
+extern void check_stack_overflow(void);
 
 int debug_init(void);
 void debug_fini(void);

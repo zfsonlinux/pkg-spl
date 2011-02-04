@@ -1259,3 +1259,20 @@ debug_fini(void)
 {
         trace_fini();
 }
+
+/* Debugging check for stack overflow: is there less than 1KB free? */
+/* This function is called from zfs only when debug is enabled */
+
+void
+check_stack_overflow(void)
+{
+	unsigned long sp;
+
+	asm("movq %%rsp, %0" : "=r" (sp) :);
+	sp = sp & (THREAD_SIZE-1);
+	if ( sp < (sizeof(struct thread_info) + THREAD_SIZE/8)) {
+		printk(KERN_WARNING "low stack detected by irq handler\n");
+		panic("Stack overflow in SPL");
+	}
+}
+EXPORT_SYMBOL(check_stack_overflow);
