@@ -150,7 +150,6 @@ vn_alloc(int flag)
 		vp->v_file = NULL;
 		vp->v_type = 0;
 	}
-
 	SRETURN(vp);
 } /* vn_alloc() */
 EXPORT_SYMBOL(vn_alloc);
