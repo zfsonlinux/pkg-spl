@@ -74,6 +74,10 @@ AC_DEFUN([SPL_AC_CONFIG_KERNEL], [
 	SPL_AC_KVASPRINTF
 	SPL_AC_3ARGS_FILE_FSYNC
 	SPL_AC_EXPORTED_RWSEM_IS_LOCKED
+	SPL_AC_3ARGS_BLKDEV_GET
+	SPL_AC_1ARGS_BLKDEV_PUT 
+	SPL_AC_2ARGS_FOLLOW_DOWN
+	SPL_AC_D_ALLOC_ANON 	
 ])
 
 AC_DEFUN([SPL_AC_MODULE_SYMVERS], [
@@ -1680,3 +1684,79 @@ AC_DEFUN([SPL_AC_EXPORTED_RWSEM_IS_LOCKED], [
 		[rwsem_is_locked() acquires sem->wait_lock])],
 		[])
 ])
+
+
+
+dnl #
+dnl # 2.6.26 API change,
+dnl # change in blkdev_get
+dnl #
+AC_DEFUN([SPL_AC_3ARGS_BLKDEV_GET], [
+        AC_MSG_CHECKING([whether blkdev_get() wants 3 args])
+        SPL_LINUX_TRY_COMPILE([
+                #include <linux/fs.h>
+        ],[
+                blkdev_get(NULL, NULL, 0);
+        ],[
+                AC_MSG_RESULT(yes)
+                AC_DEFINE(HAVE_3ARGS_BLKDEV_GET, 1,
+                          [blkdev_get() wants 3 args])
+        ],[
+                AC_MSG_RESULT(no)
+        ])
+])
+
+dnl #
+dnl # 2.6.26 API change,
+dnl # change in blkdev_put
+dnl #
+AC_DEFUN([SPL_AC_1ARGS_BLKDEV_PUT], [
+        AC_MSG_CHECKING([whether blkdev_put() wants 1 args])
+        SPL_LINUX_TRY_COMPILE([
+                #include <linux/fs.h>
+        ],[
+                blkdev_put(NULL);
+        ],[
+                AC_MSG_RESULT(yes)
+                AC_DEFINE(HAVE_1ARGS_BLKDEV_PUT, 1,
+                          [blkdev_put() wants 1 args])
+        ],[
+                AC_MSG_RESULT(no)
+        ])
+])
+
+
+dnl #
+dnl # 2.6.26 API change,
+dnl # change in follow_down
+dnl #
+AC_DEFUN([SPL_AC_2ARGS_FOLLOW_DOWN], [
+        AC_MSG_CHECKING([whether follow_down() wants 2 args])
+        SPL_LINUX_TRY_COMPILE([
+                #include <linux/namei.h>
+        ],[
+                follow_down(NULL, NULL);
+        ],[
+                AC_MSG_RESULT(yes)
+                AC_DEFINE(HAVE_2ARGS_FOLLOW_DOWN, 1,
+                          [follow_down() wants 2 args])
+        ],[
+                AC_MSG_RESULT(no)
+        ])
+])
+
+
+
+dnl #
+dnl # 2.6.28 API change, check whether d_alloc_anon() is available.
+dnl # d_alloc_anon() which was fully removed in 2.6.28
+dnl #
+AC_DEFUN([SPL_AC_D_ALLOC_ANON], [
+        SPL_CHECK_SYMBOL_EXPORT(
+                [d_alloc_anon],
+                [fs/dcache.c],
+                [AC_DEFINE(HAVE_D_ALLOC_ANON, 1,
+                [d_alloc_anon() is available])],
+                [])
+])
+
