@@ -9,6 +9,12 @@
 /* Define to 1 to enable detailed kmem tracking */
 #undef DEBUG_KMEM_TRACKING
 
+/* blkdev_put() wants 1 args */
+#undef HAVE_1ARGS_BLKDEV_PUT
+
+/* follow_down() wants 2 args */
+#undef HAVE_2ARGS_FOLLOW_DOWN
+
 /* register_sysctl_table() wants 2 args */
 #undef HAVE_2ARGS_REGISTER_SYSCTL
 
@@ -17,6 +23,9 @@
 
 /* vfs_unlink() wants 2 args */
 #undef HAVE_2ARGS_VFS_UNLINK
+
+/* blkdev_get() wants 3 args */
+#undef HAVE_3ARGS_BLKDEV_GET
 
 /* file_fsync() wants 3 args */
 #undef HAVE_3ARGS_FILE_FSYNC
@@ -65,6 +74,9 @@
 
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
+
+/* d_alloc_anon() is available */
+#undef HAVE_D_ALLOC_ANON
 
 /* linux/fdtable.h exists */
 #undef HAVE_FDTABLE_HEADER
