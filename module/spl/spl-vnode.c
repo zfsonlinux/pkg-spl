@@ -133,7 +133,8 @@ EXPORT_SYMBOL(vn_get_lin_type);
 vnode_t *
 specvp(struct vnode *vp, dev_t dev, vtype_t type, cred_t *cr)
 {
-	VN_HOLD(vp);
+	if (VN_HOLD(vp) == NULL)
+		return NULL;
 	init_special_inode(&vp->v_inode,vn_get_lin_type(type) , dev);
 	return vp;
 }
