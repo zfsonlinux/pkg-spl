@@ -1263,16 +1263,37 @@ debug_fini(void)
 /* Debugging check for stack overflow: is there less than 1KB free? */
 /* This function is called from zfs only when debug is enabled */
 
-void
-check_stack_overflow(void)
+int
+spl_check_stack_overflow(void)
 {
 	unsigned long sp;
-
 	asm("movq %%rsp, %0" : "=r" (sp) :);
 	sp = sp & (THREAD_SIZE-1);
-	if ( sp < (sizeof(struct thread_info) + THREAD_SIZE/8)) {
+	if ( sp < (sizeof(struct thread_info) + 1024*2)) {
 		printk(KERN_WARNING "low stack detected by irq handler\n");
 		panic("Stack overflow in SPL");
 	}
+	return sp;
 }
-EXPORT_SYMBOL(check_stack_overflow);
+EXPORT_SYMBOL(spl_check_stack_overflow);
+
+void __cyg_profile_func_enter (void *, void *) __attribute__((no_instrument_function));
+void __cyg_profile_func_exit (void *, void *) __attribute__((no_instrument_function));
+
+void __cyg_profile_func_enter (void *func,  void *caller)
+{
+
+#ifdef _KERNEL
+        spl_check_stack_overflow();
+#endif
+}
+EXPORT_SYMBOL(__cyg_profile_func_enter);
+
+void __cyg_profile_func_exit (void *func, void *caller)
+{
+#ifdef _KERNEL
+        spl_check_stack_overflow();
+#endif
+}
+EXPORT_SYMBOL(__cyg_profile_func_exit);
+
