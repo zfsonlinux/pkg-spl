@@ -28,3 +28,14 @@ Recommends: spl-dkms
 Description: Solaris Porting Layer utilities for Linux
  This package provides the userspace utilities for the SPL and SPLAT Linux
  kernel modules.
+
+Package: spl-dbg
+Architecture: any
+Section: debug
+Depends: spl (= ${binary:Version})
+Description: debugging symbols for spl
+ Solaris Porting Layer utilities for Linux
+ This package provides the userspace utilities for the SPL and SPLAT Linux
+ kernel modules.
+ .
+ This package contains the debugging symbols for spl.
