@@ -7,8 +7,8 @@ Build-Depends: autotools-dev,
  autoconf,
  autogen,
  automake,
- debhelper (>= 9),
- dkms (>> 2.1.1.2-5),
+ debhelper (>= 8.0.0),
+ dkms (>= 2.1.1.2-5),
  libtool,
 Standards-Version: 3.9.4
 Homepage: http://www.zfsonlinux.org/

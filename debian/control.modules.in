@@ -8,7 +8,7 @@ Build-Depends: autotools-dev,
  autogen,
  automake,
  debhelper (>= 7.4),
- dkms (>> 2.1.1.2-5),
+ dkms (>= 2.1.1.2-5),
  libtool,
  linux-headers-_KVERS_-common,
  linux-headers-_KVERS_

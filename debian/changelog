@@ -1,3 +1,9 @@
+spl-linux (0.6.2-2~squeeze) squeeze; urgency=low
+
+  * Build for Wheezy.
+
+ -- Turbo Fredriksson <turbo@debian.org>  Sat, 21 Sep 2013 08:19:07 +0200
+
 spl-linux (0.6.2-1) wheezy; urgency=low
 
   * New upstream release.
