@@ -17,7 +17,7 @@ Vcs-Browser: https://github.com/dajhorn/pkg-spl/
 
 Package: spl-dkms
 Architecture: all
-Depends: ${misc:Depends}, dkms (>= 2.2.0.2), lsb-release
+Depends: ${misc:Depends}, dkms (>= 2.2.0.2), file, lsb-release
 Recommends: spl
 Description: Solaris Porting Layer kernel modules for Linux
  The Solaris Porting Layer (SPL) is a Linux kernel module which provides many of
