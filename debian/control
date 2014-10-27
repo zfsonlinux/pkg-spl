@@ -10,7 +10,7 @@ Build-Depends: autotools-dev,
  dh-autoreconf,
  dkms (>= 2.2.0.2),
  libtool,
-Standards-Version: 3.9.3
+Standards-Version: 3.9.5
 Homepage: http://www.zfsonlinux.org/
 Vcs-Git: git://github.com/dajhorn/pkg-spl.git
 Vcs-Browser: https://github.com/dajhorn/pkg-spl/
