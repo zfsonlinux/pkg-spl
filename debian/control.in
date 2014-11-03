@@ -2,14 +2,17 @@ Source: spl-linux
 Section: kernel
 Priority: optional
 Maintainer: Debian ZFS on Linux maintainers <pkg-zfsonlinux-devel@lists.alioth.debian.org>
-Uploaders: Aron Xu <aron@debian.org>, Carlos Alberto Lopez Perez <clopez@igalia.com>, Turbo Fredriksson <turbo@debian.org>
+Uploaders: Aron Xu <aron@debian.org>,
+           Carlos Alberto Lopez Perez <clopez@igalia.com>,
+           Turbo Fredriksson <turbo@bayour.com>
 Build-Depends: autotools-dev,
- autoconf,
- autogen,
- automake,
- debhelper (>= 9),
- dkms (>> 2.1.1.2-5),
- libtool,
+               autoconf,
+               autogen,
+               automake,
+               debhelper (>= 9),
+               dkms (>> 2.1.1.2-5),
+               libtool,
+               ##MODULES_BUILD_DEPENDS##
 Standards-Version: 3.9.4
 Homepage: http://www.zfsonlinux.org/
 Vcs-Git: git://anonscm.debian.org/pkg-zfsonlinux/spl.git

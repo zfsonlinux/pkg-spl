@@ -1,3 +1,10 @@
+spl-linux (0.6.3-12~81857a~wheezy) wheezy; urgency=low
+
+    * Build udebs and modules (prepare for creating a ZoL boot image with
+      ZFS root support).
+
+ -- Turbo Fredriksson <turbo@debian.org>  Tue, 21 Oct 2014 01:04:06 +0200
+
 spl-linux (0.6.3-11~81857a~wheezy) wheezy; urgency=low
 
   * New upstream GIT tag.
