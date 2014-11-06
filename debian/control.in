@@ -7,7 +7,7 @@ Build-Depends: autotools-dev,
  autoconf,
  autogen,
  automake,
- debhelper (>= 9),
+ debhelper (>= 8),
  dkms (>> 2.1.1.2-5),
  libtool,
 Standards-Version: 3.9.4

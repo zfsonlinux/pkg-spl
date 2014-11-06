@@ -1,3 +1,10 @@
+spl-linux (0.6.3-7~squeeze) wheezy; urgency=low
+
+  * Build for Squeeze.
+    Downgrade build depend on debhelper from 8 to 9.
+
+ -- Turbo Fredriksson <turbo@debian.org>  Thu, 06 Nov 2014 22:22:38 +0100
+
 spl-linux (0.6.3-7~wheezy) wheezy; urgency=low
 
   * New upstream release.
