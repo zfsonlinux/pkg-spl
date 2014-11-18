@@ -64,7 +64,7 @@ MODULE_PARM_DESC(spl_kmem_cache_expire, "By age (0x1) or low memory (0x2)");
  * setting this value to KMC_RECLAIM_ONCE limits how aggressively the cache
  * is reclaimed.  This may increase the likelihood of out of memory events.
  */
-unsigned int spl_kmem_cache_reclaim = 0;
+unsigned int spl_kmem_cache_reclaim = 0 /* KMC_RECLAIM_ONCE */;
 module_param(spl_kmem_cache_reclaim, uint, 0644);
 MODULE_PARM_DESC(spl_kmem_cache_reclaim, "Single reclaim pass (0x1)");
 
@@ -101,44 +101,6 @@ module_param(spl_kmem_cache_kmem_limit, uint, 0644);
 MODULE_PARM_DESC(spl_kmem_cache_kmem_limit,
     "Objects less than N bytes use the kmalloc");
 
-/*
- * The minimum amount of memory measured in pages to be free at all
- * times on the system.  This is similar to Linux's zone->pages_min
- * multiplied by the number of zones and is sized based on that.
- */
-pgcnt_t minfree = 0;
-EXPORT_SYMBOL(minfree);
-
-/*
- * The desired amount of memory measured in pages to be free at all
- * times on the system.  This is similar to Linux's zone->pages_low
- * multiplied by the number of zones and is sized based on that.
- * Assuming all zones are being used roughly equally, when we drop
- * below this threshold asynchronous page reclamation is triggered.
- */
-pgcnt_t desfree = 0;
-EXPORT_SYMBOL(desfree);
-
-/*
- * When above this amount of memory measures in pages the system is
- * determined to have enough free memory.  This is similar to Linux's
- * zone->pages_high multiplied by the number of zones and is sized based
- * on that.  Assuming all zones are being used roughly equally, when
- * asynchronous page reclamation reaches this threshold it stops.
- */
-pgcnt_t lotsfree = 0;
-EXPORT_SYMBOL(lotsfree);
-
-/* Unused always 0 in this implementation */
-pgcnt_t needfree = 0;
-EXPORT_SYMBOL(needfree);
-
-pgcnt_t swapfs_minfree = 0;
-EXPORT_SYMBOL(swapfs_minfree);
-
-pgcnt_t swapfs_reserve = 0;
-EXPORT_SYMBOL(swapfs_reserve);
-
 vmem_t *heap_arena = NULL;
 EXPORT_SYMBOL(heap_arena);
 
@@ -148,142 +110,14 @@ EXPORT_SYMBOL(zio_alloc_arena);
 vmem_t *zio_arena = NULL;
 EXPORT_SYMBOL(zio_arena);
 
-#ifndef HAVE_GET_VMALLOC_INFO
-get_vmalloc_info_t get_vmalloc_info_fn = SYMBOL_POISON;
-EXPORT_SYMBOL(get_vmalloc_info_fn);
-#endif /* HAVE_GET_VMALLOC_INFO */
-
-#ifdef HAVE_PGDAT_HELPERS
-# ifndef HAVE_FIRST_ONLINE_PGDAT
-first_online_pgdat_t first_online_pgdat_fn = SYMBOL_POISON;
-EXPORT_SYMBOL(first_online_pgdat_fn);
-# endif /* HAVE_FIRST_ONLINE_PGDAT */
-
-# ifndef HAVE_NEXT_ONLINE_PGDAT
-next_online_pgdat_t next_online_pgdat_fn = SYMBOL_POISON;
-EXPORT_SYMBOL(next_online_pgdat_fn);
-# endif /* HAVE_NEXT_ONLINE_PGDAT */
-
-# ifndef HAVE_NEXT_ZONE
-next_zone_t next_zone_fn = SYMBOL_POISON;
-EXPORT_SYMBOL(next_zone_fn);
-# endif /* HAVE_NEXT_ZONE */
-
-#else /* HAVE_PGDAT_HELPERS */
-
-# ifndef HAVE_PGDAT_LIST
-struct pglist_data *pgdat_list_addr = SYMBOL_POISON;
-EXPORT_SYMBOL(pgdat_list_addr);
-# endif /* HAVE_PGDAT_LIST */
-
-#endif /* HAVE_PGDAT_HELPERS */
-
-#ifdef NEED_GET_ZONE_COUNTS
-# ifndef HAVE_GET_ZONE_COUNTS
-get_zone_counts_t get_zone_counts_fn = SYMBOL_POISON;
-EXPORT_SYMBOL(get_zone_counts_fn);
-# endif /* HAVE_GET_ZONE_COUNTS */
-
-unsigned long
-spl_global_page_state(spl_zone_stat_item_t item)
-{
-	unsigned long active;
-	unsigned long inactive;
-	unsigned long free;
-
-	get_zone_counts(&active, &inactive, &free);
-	switch (item) {
-	case SPL_NR_FREE_PAGES: return free;
-	case SPL_NR_INACTIVE:   return inactive;
-	case SPL_NR_ACTIVE:     return active;
-	default:                ASSERT(0); /* Unsupported */
-	}
-
-	return 0;
-}
-#else
-# ifdef HAVE_GLOBAL_PAGE_STATE
-unsigned long
-spl_global_page_state(spl_zone_stat_item_t item)
-{
-	unsigned long pages = 0;
-
-	switch (item) {
-	case SPL_NR_FREE_PAGES:
-#  ifdef HAVE_ZONE_STAT_ITEM_NR_FREE_PAGES
-		pages += global_page_state(NR_FREE_PAGES);
-#  endif
-		break;
-	case SPL_NR_INACTIVE:
-#  ifdef HAVE_ZONE_STAT_ITEM_NR_INACTIVE
-		pages += global_page_state(NR_INACTIVE);
-#  endif
-#  ifdef HAVE_ZONE_STAT_ITEM_NR_INACTIVE_ANON
-		pages += global_page_state(NR_INACTIVE_ANON);
-#  endif
-#  ifdef HAVE_ZONE_STAT_ITEM_NR_INACTIVE_FILE
-		pages += global_page_state(NR_INACTIVE_FILE);
-#  endif
-		break;
-	case SPL_NR_ACTIVE:
-#  ifdef HAVE_ZONE_STAT_ITEM_NR_ACTIVE
-		pages += global_page_state(NR_ACTIVE);
-#  endif
-#  ifdef HAVE_ZONE_STAT_ITEM_NR_ACTIVE_ANON
-		pages += global_page_state(NR_ACTIVE_ANON);
-#  endif
-#  ifdef HAVE_ZONE_STAT_ITEM_NR_ACTIVE_FILE
-		pages += global_page_state(NR_ACTIVE_FILE);
-#  endif
-		break;
-	default:
-		ASSERT(0); /* Unsupported */
-	}
-
-	return pages;
-}
-# else
-#  error "Both global_page_state() and get_zone_counts() unavailable"
-# endif /* HAVE_GLOBAL_PAGE_STATE */
-#endif /* NEED_GET_ZONE_COUNTS */
-EXPORT_SYMBOL(spl_global_page_state);
-
-#ifndef HAVE_SHRINK_DCACHE_MEMORY
-shrink_dcache_memory_t shrink_dcache_memory_fn = SYMBOL_POISON;
-EXPORT_SYMBOL(shrink_dcache_memory_fn);
-#endif /* HAVE_SHRINK_DCACHE_MEMORY */
-
-#ifndef HAVE_SHRINK_ICACHE_MEMORY
-shrink_icache_memory_t shrink_icache_memory_fn = SYMBOL_POISON;
-EXPORT_SYMBOL(shrink_icache_memory_fn);
-#endif /* HAVE_SHRINK_ICACHE_MEMORY */
-
-pgcnt_t
-spl_kmem_availrmem(void)
-{
-	/* The amount of easily available memory */
-	return (spl_global_page_state(SPL_NR_FREE_PAGES) +
-	        spl_global_page_state(SPL_NR_INACTIVE));
-}
-EXPORT_SYMBOL(spl_kmem_availrmem);
-
 size_t
 vmem_size(vmem_t *vmp, int typemask)
 {
-        struct vmalloc_info vmi;
-	size_t size = 0;
+	ASSERT3P(vmp, ==, NULL);
+	ASSERT3S(typemask & VMEM_ALLOC, ==, VMEM_ALLOC);
+	ASSERT3S(typemask & VMEM_FREE, ==, VMEM_FREE);
 
-	ASSERT(vmp == NULL);
-	ASSERT(typemask & (VMEM_ALLOC | VMEM_FREE));
-
-	get_vmalloc_info(&vmi);
-	if (typemask & VMEM_ALLOC)
-		size += (size_t)vmi.used;
-
-	if (typemask & VMEM_FREE)
-		size += (size_t)(VMALLOC_TOTAL - vmi.used);
-
-	return size;
+	return (VMALLOC_TOTAL);
 }
 EXPORT_SYMBOL(vmem_size);
 
@@ -293,29 +127,6 @@ kmem_debugging(void)
 	return 0;
 }
 EXPORT_SYMBOL(kmem_debugging);
-
-#ifndef HAVE_KVASPRINTF
-/* Simplified asprintf. */
-char *kvasprintf(gfp_t gfp, const char *fmt, va_list ap)
-{
-	unsigned int len;
-	char *p;
-	va_list aq;
-
-	va_copy(aq, ap);
-	len = vsnprintf(NULL, 0, fmt, aq);
-	va_end(aq);
-
-	p = kmalloc(len+1, gfp);
-	if (!p)
-		return NULL;
-
-	vsnprintf(p, len+1, fmt, ap);
-
-	return p;
-}
-EXPORT_SYMBOL(kvasprintf);
-#endif /* HAVE_KVASPRINTF */
 
 char *
 kmem_vasprintf(const char *fmt, va_list ap)
@@ -977,7 +788,7 @@ spl_sko_from_obj(spl_kmem_cache_t *skc, void *obj)
 static inline uint32_t
 spl_offslab_size(spl_kmem_cache_t *skc)
 {
-	return 1UL << (highbit(spl_obj_size(skc)) + 1);
+	return 1UL << (fls64(spl_obj_size(skc)) + 1);
 }
 
 /*
@@ -1055,9 +866,6 @@ spl_slab_alloc(spl_kmem_cache_t *skc, int flags)
 		list_add_tail(&sko->sko_list, &sks->sks_free_list);
 	}
 
-	list_for_each_entry(sko, &sks->sks_free_list, sko_list)
-		if (skc->skc_ctor)
-			skc->skc_ctor(sko->sko_addr, skc->skc_private, flags);
 out:
 	if (rc) {
 		if (skc->skc_flags & KMC_OFFSLAB)
@@ -1163,9 +971,6 @@ spl_slab_reclaim(spl_kmem_cache_t *skc, int count, int flag)
 	list_for_each_entry_safe(sko, n, &sko_list, sko_list) {
 		ASSERT(sko->sko_magic == SKO_MAGIC);
 
-		if (skc->skc_dtor)
-			skc->skc_dtor(sko->sko_addr, skc->skc_private);
-
 		if (skc->skc_flags & KMC_OFFSLAB)
 			kv_free(skc, sko->sko_addr, size);
 	}
@@ -1267,9 +1072,6 @@ spl_emergency_alloc(spl_kmem_cache_t *skc, int flags, void **obj)
 		SRETURN(-EINVAL);
 	}
 
-	if (skc->skc_ctor)
-		skc->skc_ctor(ske->ske_obj, skc->skc_private, flags);
-
 	*obj = ske->ske_obj;
 
 	SRETURN(0);
@@ -1295,9 +1097,6 @@ spl_emergency_free(spl_kmem_cache_t *skc, void *obj)
 
 	if (unlikely(ske == NULL))
 		SRETURN(-ENOENT);
-
-	if (skc->skc_dtor)
-		skc->skc_dtor(ske->ske_obj, skc->skc_private);
 
 	kfree(ske->ske_obj);
 	kfree(ske);
@@ -1391,7 +1190,7 @@ spl_cache_age(void *data)
 	atomic_inc(&skc->skc_ref);
 
 	if (!(skc->skc_flags & KMC_NOMAGAZINE))
-		spl_on_each_cpu(spl_magazine_age, skc, 1);
+		on_each_cpu(spl_magazine_age, skc, 1);
 
 	spl_slab_reclaim(skc, skc->skc_reap, 0);
 
@@ -2127,13 +1926,9 @@ spl_kmem_cache_alloc(spl_kmem_cache_t *skc, int flags)
 
 		do {
 			obj = kmem_cache_alloc(slc, flags | __GFP_COMP);
-			if (obj && skc->skc_ctor)
-				skc->skc_ctor(obj, skc->skc_private, flags);
-
 		} while ((obj == NULL) && !(flags & KM_NOSLEEP));
 
-		atomic_dec(&skc->skc_ref);
-		SRETURN(obj);
+		goto ret;
 	}
 
 	local_irq_disable();
@@ -2162,12 +1957,20 @@ restart:
 	ASSERT(obj);
 	ASSERT(IS_P2ALIGNED(obj, skc->skc_obj_align));
 
+ret:
 	/* Pre-emptively migrate object to CPU L1 cache */
-	prefetchw(obj);
+	if (obj) {
+		if (obj && skc->skc_ctor)
+			skc->skc_ctor(obj, skc->skc_private, flags);
+		else
+			prefetchw(obj);
+	}
+
 	atomic_dec(&skc->skc_ref);
 
 	SRETURN(obj);
 }
+
 EXPORT_SYMBOL(spl_kmem_cache_alloc);
 
 /*
@@ -2188,12 +1991,15 @@ spl_kmem_cache_free(spl_kmem_cache_t *skc, void *obj)
 	atomic_inc(&skc->skc_ref);
 
 	/*
+	 * Run the destructor
+	 */
+	if (skc->skc_dtor)
+		skc->skc_dtor(obj, skc->skc_private);
+
+	/*
 	 * Free the object from the Linux underlying Linux slab.
 	 */
 	if (skc->skc_flags & KMC_SLAB) {
-		if (skc->skc_dtor)
-			skc->skc_dtor(obj, skc->skc_private);
-
 		kmem_cache_free(skc->skc_linux_cache, obj);
 		goto out;
 	}
@@ -2237,14 +2043,24 @@ EXPORT_SYMBOL(spl_kmem_cache_free);
  * report that they contain unused objects.  Because of this we only
  * register one shrinker function in the shim layer for all slab caches.
  * We always attempt to shrink all caches when this generic shrinker
- * is called.  The shrinker should return the number of free objects
- * in the cache when called with nr_to_scan == 0 but not attempt to
- * free any objects.  When nr_to_scan > 0 it is a request that nr_to_scan
- * objects should be freed, which differs from Solaris semantics.
- * Solaris semantics are to free all available objects which may (and
- * probably will) be more objects than the requested nr_to_scan.
+ * is called.
+ *
+ * If sc->nr_to_scan is zero, the caller is requesting a query of the
+ * number of objects which can potentially be freed.  If it is nonzero,
+ * the request is to free that many objects.
+ *
+ * Linux kernels >= 3.12 have the count_objects and scan_objects callbacks
+ * in struct shrinker and also require the shrinker to return the number
+ * of objects freed.
+ *
+ * Older kernels require the shrinker to return the number of freeable
+ * objects following the freeing of nr_to_free.
+ *
+ * Linux semantics differ from those under Solaris, which are to
+ * free all available objects which may (and probably will) be more
+ * objects than the requested nr_to_scan.
  */
-static int
+static spl_shrinker_t
 __spl_kmem_cache_generic_shrinker(struct shrinker *shrink,
     struct shrink_control *sc)
 {
@@ -2253,17 +2069,22 @@ __spl_kmem_cache_generic_shrinker(struct shrinker *shrink,
 
 	down_read(&spl_kmem_cache_sem);
 	list_for_each_entry(skc, &spl_kmem_cache_list, skc_list) {
-		if (sc->nr_to_scan)
+		if (sc->nr_to_scan) {
+#ifdef HAVE_SPLIT_SHRINKER_CALLBACK
+			uint64_t oldalloc = skc->skc_obj_alloc;
 			spl_kmem_cache_reap_now(skc,
 			   MAX(sc->nr_to_scan >> fls64(skc->skc_slab_objs), 1));
-
-		/*
-		 * Presume everything alloc'ed is reclaimable, this ensures
-		 * we are called again with nr_to_scan > 0 so can try and
-		 * reclaim.  The exact number is not important either so
-		 * we forgo taking this already highly contented lock.
-		 */
-		alloc += skc->skc_obj_alloc;
+			if (oldalloc > skc->skc_obj_alloc)
+				alloc += oldalloc - skc->skc_obj_alloc;
+#else
+			spl_kmem_cache_reap_now(skc,
+			   MAX(sc->nr_to_scan >> fls64(skc->skc_slab_objs), 1));
+			alloc += skc->skc_obj_alloc;
+#endif /* HAVE_SPLIT_SHRINKER_CALLBACK */
+		} else {
+			/* Request to query number of freeable objects */
+			alloc += skc->skc_obj_alloc;
+		}
 	}
 	up_read(&spl_kmem_cache_sem);
 
@@ -2274,9 +2095,9 @@ __spl_kmem_cache_generic_shrinker(struct shrinker *shrink,
 	 * system to thrash.
 	 */
 	if ((spl_kmem_cache_reclaim & KMC_RECLAIM_ONCE) && sc->nr_to_scan)
-		return (-1);
+		return (SHRINK_STOP);
 
-	return MAX((alloc * sysctl_vfs_cache_pressure) / 100, 0);
+	return (MAX(alloc, 0));
 }
 
 SPL_SHRINKER_CALLBACK_WRAPPER(spl_kmem_cache_generic_shrinker);
@@ -2385,7 +2206,7 @@ spl_kmem_reap(void)
 	sc.nr_to_scan = KMC_REAP_CHUNK;
 	sc.gfp_mask = GFP_KERNEL;
 
-	__spl_kmem_cache_generic_shrinker(NULL, &sc);
+	(void) __spl_kmem_cache_generic_shrinker(NULL, &sc);
 }
 EXPORT_SYMBOL(spl_kmem_reap);
 
@@ -2471,114 +2292,6 @@ spl_kmem_fini_tracking(struct list_head *list, spinlock_t *lock)
 #define spl_kmem_init_tracking(list, lock, size)
 #define spl_kmem_fini_tracking(list, lock)
 #endif /* DEBUG_KMEM && DEBUG_KMEM_TRACKING */
-
-static void
-spl_kmem_init_globals(void)
-{
-	struct zone *zone;
-
-	/* For now all zones are includes, it may be wise to restrict
-	 * this to normal and highmem zones if we see problems. */
-        for_each_zone(zone) {
-
-                if (!populated_zone(zone))
-                        continue;
-
-		minfree += min_wmark_pages(zone);
-		desfree += low_wmark_pages(zone);
-		lotsfree += high_wmark_pages(zone);
-	}
-
-	/* Solaris default values */
-	swapfs_minfree = MAX(2*1024*1024 >> PAGE_SHIFT, physmem >> 3);
-	swapfs_reserve = MIN(4*1024*1024 >> PAGE_SHIFT, physmem >> 4);
-}
-
-/*
- * Called at module init when it is safe to use spl_kallsyms_lookup_name()
- */
-int
-spl_kmem_init_kallsyms_lookup(void)
-{
-#ifndef HAVE_GET_VMALLOC_INFO
-	get_vmalloc_info_fn = (get_vmalloc_info_t)
-		spl_kallsyms_lookup_name("get_vmalloc_info");
-	if (!get_vmalloc_info_fn) {
-		printk(KERN_ERR "Error: Unknown symbol get_vmalloc_info\n");
-		return -EFAULT;
-	}
-#endif /* HAVE_GET_VMALLOC_INFO */
-
-#ifdef HAVE_PGDAT_HELPERS
-# ifndef HAVE_FIRST_ONLINE_PGDAT
-	first_online_pgdat_fn = (first_online_pgdat_t)
-		spl_kallsyms_lookup_name("first_online_pgdat");
-	if (!first_online_pgdat_fn) {
-		printk(KERN_ERR "Error: Unknown symbol first_online_pgdat\n");
-		return -EFAULT;
-	}
-# endif /* HAVE_FIRST_ONLINE_PGDAT */
-
-# ifndef HAVE_NEXT_ONLINE_PGDAT
-	next_online_pgdat_fn = (next_online_pgdat_t)
-		spl_kallsyms_lookup_name("next_online_pgdat");
-	if (!next_online_pgdat_fn) {
-		printk(KERN_ERR "Error: Unknown symbol next_online_pgdat\n");
-		return -EFAULT;
-	}
-# endif /* HAVE_NEXT_ONLINE_PGDAT */
-
-# ifndef HAVE_NEXT_ZONE
-	next_zone_fn = (next_zone_t)
-		spl_kallsyms_lookup_name("next_zone");
-	if (!next_zone_fn) {
-		printk(KERN_ERR "Error: Unknown symbol next_zone\n");
-		return -EFAULT;
-	}
-# endif /* HAVE_NEXT_ZONE */
-
-#else /* HAVE_PGDAT_HELPERS */
-
-# ifndef HAVE_PGDAT_LIST
-	pgdat_list_addr = *(struct pglist_data **)
-		spl_kallsyms_lookup_name("pgdat_list");
-	if (!pgdat_list_addr) {
-		printk(KERN_ERR "Error: Unknown symbol pgdat_list\n");
-		return -EFAULT;
-	}
-# endif /* HAVE_PGDAT_LIST */
-#endif /* HAVE_PGDAT_HELPERS */
-
-#if defined(NEED_GET_ZONE_COUNTS) && !defined(HAVE_GET_ZONE_COUNTS)
-	get_zone_counts_fn = (get_zone_counts_t)
-		spl_kallsyms_lookup_name("get_zone_counts");
-	if (!get_zone_counts_fn) {
-		printk(KERN_ERR "Error: Unknown symbol get_zone_counts\n");
-		return -EFAULT;
-	}
-#endif  /* NEED_GET_ZONE_COUNTS && !HAVE_GET_ZONE_COUNTS */
-
-	/*
-	 * It is now safe to initialize the global tunings which rely on
-	 * the use of the for_each_zone() macro.  This macro in turns
-	 * depends on the *_pgdat symbols which are now available.
-	 */
-	spl_kmem_init_globals();
-
-#ifndef HAVE_SHRINK_DCACHE_MEMORY
-	/* When shrink_dcache_memory_fn == NULL support is disabled */
-	shrink_dcache_memory_fn = (shrink_dcache_memory_t)
-		spl_kallsyms_lookup_name("shrink_dcache_memory");
-#endif /* HAVE_SHRINK_DCACHE_MEMORY */
-
-#ifndef HAVE_SHRINK_ICACHE_MEMORY
-	/* When shrink_icache_memory_fn == NULL support is disabled */
-	shrink_icache_memory_fn = (shrink_icache_memory_t)
-		spl_kallsyms_lookup_name("shrink_icache_memory");
-#endif /* HAVE_SHRINK_ICACHE_MEMORY */
-
-	return 0;
-}
 
 int
 spl_kmem_init(void)

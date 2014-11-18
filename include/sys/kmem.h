@@ -135,7 +135,6 @@ kzalloc_nofail(size_t size, gfp_t flags)
 static inline void *
 kmalloc_node_nofail(size_t size, gfp_t flags, int node)
 {
-#ifdef HAVE_KMALLOC_NODE
 	void *ptr;
 
 	sanitize_flags(current, &flags);
@@ -145,9 +144,6 @@ kmalloc_node_nofail(size_t size, gfp_t flags, int node)
 	} while (ptr == NULL && (flags & __GFP_WAIT));
 
 	return ptr;
-#else
-	return kmalloc_nofail(size, flags);
-#endif /* HAVE_KMALLOC_NODE */
 }
 
 static inline void *
@@ -399,7 +395,7 @@ extern struct rw_semaphore spl_kmem_cache_sem;
 #define SPL_KMEM_CACHE_DELAY		15	/* Minimum slab release age */
 #define SPL_KMEM_CACHE_REAP		0	/* Default reap everything */
 #define SPL_KMEM_CACHE_OBJ_PER_SLAB	16	/* Target objects per slab */
-#define SPL_KMEM_CACHE_OBJ_PER_SLAB_MIN	8	/* Minimum objects per slab */
+#define SPL_KMEM_CACHE_OBJ_PER_SLAB_MIN	1	/* Minimum objects per slab */
 #define SPL_KMEM_CACHE_ALIGN		8	/* Default object alignment */
 
 #define POINTER_IS_VALID(p)		0	/* Unimplemented */
@@ -502,7 +498,6 @@ extern void spl_kmem_cache_free(spl_kmem_cache_t *skc, void *obj);
 extern void spl_kmem_cache_reap_now(spl_kmem_cache_t *skc, int count);
 extern void spl_kmem_reap(void);
 
-int spl_kmem_init_kallsyms_lookup(void);
 int spl_kmem_init(void);
 void spl_kmem_fini(void);
 
