@@ -1,3 +1,9 @@
+spl-linux (0.6.3-12~81857a~jessie) jessie; urgency=low
+
+    * Build for jessie
+
+ -- Turbo Fredriksson <turbo@debian.org>  Wed, 19 Nov 2014 17:22:45 +0100
+
 spl-linux (0.6.3-12~81857a~wheezy) wheezy; urgency=low
 
     * Build udebs and modules (prepare for creating a ZoL boot image with
