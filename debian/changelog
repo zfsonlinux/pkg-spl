@@ -1,3 +1,11 @@
+spl-linux (0.6.3-13~utopic) utopic; urgency=low
+
+  * Add `file` dependency for libtool ABI check.
+  * Update packaging to standards version 3.9.5
+  * Backport: mutex-force-serialization-on-mutex_exit-to-fix-races.patch
+
+ -- Darik Horn <dajhorn@vanadac.com>  Fri, 19 Dec 2014 20:02:11 -0600
+
 spl-linux (0.6.3-1~utopic) utopic; urgency=low
 
   * Update gbp.conf for generic trunk builds.
