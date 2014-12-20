@@ -1,0 +1,214 @@
+<<<<<<< HEAD
+spl-linux (0.6.3-1~precise) precise; urgency=low
+
+  [ Darik Horn ]
+  * Use dh_autoreconf.
+  * Use dh_auto_configure.
+  * Revert "Set extend-diff-ignore='.*' in the debian/source/options file"
+  * Use the deb revision instead of the META release.
+  * Update changelog for 0.6.2-1~precise release
+=======
+spl-linux (0.6.3-1~trusty) trusty; urgency=low
+>>>>>>> master/ubuntu/TRUNK
+
+  [ Richard Yao ]
+  * Replace current_kernel_time() with getnstimeofday()
+
+  [ Ned Bass ]
+  * Add kpreempt() compatibility macro
+
+  [ Kohsuke Kawaguchi ]
+  * Document how to run SPLAT
+
+  [ Brian Behlendorf ]
+  * Consistently use local_irq_disable/local_irq_enable
+
+  [ Richard Yao ]
+  * Define SET_ERROR()
+
+  [ Prakash Surya ]
+  * Add callbacks for displaying KSTAT_TYPE_RAW kstats
+  * Add wrappers for accessing PID and command info
+
+  [ Brian Behlendorf ]
+  * Revert "Add KSTAT_TYPE_TXG type"
+
+  [ Cyril Plisko ]
+  * Kstat to use private lock by default
+
+  [ Ned Bass ]
+  * 3537 add kstat_waitq_enter and friends
+  * Emulate illumos interface cv_timedwait_hires()
+
+  [ Richard Yao ]
+  * Linux 3.12 compat: New shrinker API
+
+  [ Cyril Plisko ]
+  * Tighten spl dependency on spl-kmod
+
+  [ Brian Behlendorf ]
+  * Retroactively fix bogus %changelog date
+
+  [ Turbo Fredriksson ]
+  * Document SPL module parameters.
+
+  [ Richard Yao ]
+  * Linux 3.13 compat: Remove unused flags variable from __cv_init()
+  * Linux 3.13 compat: Pass NULL for new delegated inode argument
+
+  [ Brian Behlendorf ]
+  * Add module versioning
+  * Include linux/vmalloc.h for ARM and Sparc
+  * Remove default taskq thread to CPU bindings
+
+  [ marku89 ]
+  * Define the needed ISA types for Sparc
+
+  [ Brian Behlendorf ]
+  * Remove incorrect use of EXTRA_DIST for man pages
+  * splat kmem:slab_reclaim: Test cleanup
+  * splat cred:groupmember: Fix false positives
+
+  [ Tim Chase ]
+  * Support post-3.13 kthread_create() semantics.
+  * De-inline spl_kthread_create().
+  * Call kthread_create() correctly with fixed arguments.
+
+  [ Richard Yao ]
+  * Simplify hostid logic
+
+  [ Yuxuan Shui ]
+  * This patch add a CTASSERT macro for compile time assertion.
+
+  [ Chunwei Chen ]
+  * Add ddi_time_after and friends
+
+  [ Andrey Vesnovaty ]
+  * Expose max/min objs per slab and max slab size
+
+  [ Richard Yao ]
+  * Change spl_kmem_cache_expire default setting to 2
+
+  [ Jorgen Lundman ]
+  * Add support for aarch64 (ARMv8)
+
+  [ Chunwei Chen ]
+  * Fix crash when using ZFS on Ceph rbd
+
+  [ Andrey Vesnovaty ]
+  * Evenly distribute the taskq threads across available CPUs
+
+  [ Chunwei Chen ]
+  * Linux 3.15 compat: NICE_TO_PRIO and PRIO_TO_NICE
+  * Linux 3.15: vfs_rename() added a flags argument
+
+  [ Brian Behlendorf ]
+  * Add KMC_SLAB cache type
+  * Add spl_kmem_cache_reclaim module option
+  * Restrict release number to META version
+  * Fix DKMS package upgrade and packager
+
+  [ Turbo Fredriksson ]
+  * Set LANG to a reasonable default (C)
+
+  [ Brian Behlendorf ]
+  * Tag spl-0.6.3
+
+<<<<<<< HEAD
+ -- Darik Horn <dajhorn@vanadac.com>  Thu, 12 Jun 2014 20:49:57 -0400
+
+spl-linux (0.6.2-1~precise) precise; urgency=low
+
+  [ Jan Engelhardt ]
+  * build: resolve orthographic and other grammatical errors
+  * build: use CPPFLAGS
+  * gitignore: anchor entries at their respective directory
+  * build: do not call boilerplate ourself
+
+  [ Brian Behlendorf ]
+  * Automake 1.10.1 compat: AM_SILENT_RULES
+  * Replace the SPL_AC_META perl dependency with awk
+  * Add additional dependencies for DKMS package
+
+  [ Etienne Dechamps ]
+  * Fix various generic kmod RPM spec issues.
+
+  [ Turbo Fredriksson ]
+  * Support .nogitrelease file
+  * Add --bump=0 to alien
+  * Ignore *.{deb,rpm,tar.gz} files in the top directory.
+
+  [ Brian Behlendorf ]
+  * Add msec/usec/nsec to tick convertors
+  * Fix delay()
+  * Fix taskq_wait_id()
+
+  [ Tim Chase ]
+  * Fix --enable-debug-kmem-tracking option
+
+  [ Brian Behlendorf ]
+  * Add ASSERT0 and VERIFY0 macros
+  * Fix ASSERT0 and VERIFY0 macro typo
+
+  [ Matthew Thode ]
+  * Copy spl.release.in to kernel dir
+
+  [ Nathaniel Clark ]
+  * Add --buildroot option to kmod build
+
+  [ Yuxuan Shui ]
+  * Linux 3.10 compat: struct vmalloc_info moved
+  * Linux 3.10 compat: replace PDE()->data with PDE_DATA()
+  * Linux 3.10 compat: add missing include of linux/slab.h
+
+  [ Richard Yao ]
+  * Linux 3.10 compat: Do not rely on struct proc_dir_entry definition
+
+  [ Brian Behlendorf ]
+  * Fix --enable-debug-kmem-tracking option
+  * Fix bogus kmem leak warning
+  * Improve build instructions
+
+  [ James H ]
+  * Modify gethrestime to use current_kernel_time()
+
+  [ Brian Behlendorf ]
+  * Return -1 for generic kmem cache shrinker
+  * Fix KMC_OFFSLAB type caches
+  * Add kmod repo integration
+
+  [ Richard Yao ]
+  * Linux 3.11 compat: Replace num_physpages with totalram_pages
+  * Fix race in spl_kmem_cache_reap_now()
+  * PaX/GrSecurity Linux 3.8.y compat: Use __no_const on struct ctl_table
+  * Linux 3.8 compat: Use kuid_t/kgid_t when required
+
+  [ Brian Behlendorf ]
+  * Tag spl-0.6.2
+
+  [ Darik Horn ]
+  * Use dh_autoreconf.
+  * Use dh_auto_configure.
+  * Revert "Set extend-diff-ignore='.*' in the debian/source/options file"
+  * Use the deb revision instead of the META release.
+
+ -- Darik Horn <dajhorn@vanadac.com>  Fri, 23 Aug 2013 18:34:54 -0500
+
+spl-linux (0.6.1-1~precise) precise; urgency=low
+
+  * Initial release.
+
+ -- Darik Horn <dajhorn@vanadac.com>  Tue, 26 Mar 2013 20:37:23 -0500
+=======
+  [ Darik Horn ]
+  * Revert "Backport Linux 3.13 compatibility patches."
+
+ -- Darik Horn <dajhorn@vanadac.com>  Thu, 12 Jun 2014 20:34:23 -0400
+
+spl-linux (0.6.2-2~trusty) trusty; urgency=low
+
+  * Update gbp.conf for Ubuntu 14.04 Trusty Tahr.
+  * Backport Linux 3.13 compatibility patches.
+
+ -- Darik Horn <dajhorn@vanadac.com>  Tue, 08 Apr 2014 20:04:41 -0400
+>>>>>>> master/ubuntu/TRUNK

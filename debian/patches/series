@@ -1,1 +1,2 @@
 0001-Revert-Remove-etc-hostid-missing-warning.patch
+0002-mutex-force-serialization-on-mutex_exit-to-fix-races.patch
