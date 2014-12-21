@@ -42,7 +42,6 @@ Description: Solaris Porting Layer kernel modules for Linux
 
 Package: spl
 Architecture: linux-any
-Conflicts: spl-dev
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Recommends: spl-modules | spl-dkms
 Description: Solaris Porting Layer user-space utilities for Linux
