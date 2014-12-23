@@ -1,3 +1,11 @@
+spl-linux (0.6.3-16~a3c1eb~wheezy) wheezy; urgency=low
+
+  * Remove the conflict on 'spl-dev' from 'spl'. This is/was a remnant of an older
+    'spl-dev' package created here. Since this is no more (and probably haven't been
+    for years/a long time, remove the conflict.
+
+ -- Turbo Fredriksson <turbo@debian.org>  Tue, 23 Dec 2014 14:44:02 +0100
+
 spl-linux (0.6.3-15~a3c1eb~wheezy) wheezy; urgency=low
 
   * New upstream GIT tag.
