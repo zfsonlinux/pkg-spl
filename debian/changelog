@@ -1,3 +1,33 @@
+spl-linux (0.6.3-3~trusty) trusty; urgency=low
+
+  [ Tom Prince ]
+  * Install header during post-build rather than post-install.
+
+  [ Brian Behlendorf ]
+  * Tag spl-0.6.3-1.1
+  * Set spl_kmem_cache_reclaim=0 to default
+  * Set spl_kmem_cache_slab_limit=16384 to default
+
+  [ Ned Bass ]
+  * Linux 3.17 compat: remove wait_on_bit action function
+
+  [ Turbo Fredriksson ]
+  * Linux 3.16 compat: smp_mb__after_clear_bit()
+
+  [ Tim Chase ]
+  * Linux 3.12 compat: shrinker semantics
+
+  [ Chunwei Chen ]
+  * mutex: force serialization on mutex_exit() to fix races
+
+  [ Brian Behlendorf ]
+  * Tag spl-0.6.3-1.2
+
+  [ Darik Horn ]
+  * Revert "Backport: mutex-force-serialization-on-mutex_exit-to-fix-races.patch"
+
+ -- Darik Horn <dajhorn@vanadac.com>  Wed, 24 Dec 2014 21:57:21 -0600
+
 spl-linux (0.6.3-2~trusty) trusty; urgency=low
 
   * Add `file` dependency for libtool ABI check.
