@@ -1,3 +1,9 @@
+spl-linux (0.6.3-16~54cccf~jessie) jessie; urgency=low
+
+  * New upstream GIT tag.
+
+ -- Turbo Fredriksson <turbo@debian.org>  Sun, 28 Dec 2014 03:46:38 +0100
+
 spl-linux (0.6.3-15~a3c1eb~jessie) jessie; urgency=low
 
   * Remove the conflict on 'spl-dev' from 'spl'. This is/was a remnant of an older
