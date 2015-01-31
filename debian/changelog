@@ -1,3 +1,9 @@
+spl-linux (0.6.3-17~54cccf~wheezy) wheezy; urgency=low
+
+  * New upstream GIT tag.
+
+ -- Turbo Fredriksson <turbo@debian.org>  Sat, 31 Jan 2015 20:31:26 +0100
+
 spl-linux (0.6.3-16~a3c1eb~wheezy) wheezy; urgency=low
 
   * Remove the conflict on 'spl-dev' from 'spl'. This is/was a remnant of an older
