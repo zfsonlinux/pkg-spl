@@ -1,3 +1,134 @@
+spl-linux (0.6.3-15~utopic~1.gbpcb9274) utopic; urgency=low
+
+  ** SNAPSHOT build @cb9274b66ea821c574383dc462a3825fd4218cfb **
+
+  [ Tim Chase ]
+  * Safer debugging and assertion macros.
+
+  [ Brian Behlendorf ]
+  * Rate limit debugging stack traces
+
+  [ Tim Chase ]
+  * Add functions and macros as used upstream.
+  * Add atomic_swap_32() and atomic_swap_64()
+
+  [ Brian Behlendorf ]
+  * Set spl_kmem_cache_reclaim=0 to default
+  * Set spl_kmem_cache_slab_limit=16384 to default
+
+  [ Ned Bass ]
+  * Linux 3.17 compat: remove wait_on_bit action function
+
+  [ Richard Yao ]
+  * Cleanup vn_rename() and vn_remove()
+
+  [ stf ]
+  * Avoid PAGESIZE redefinition
+
+  [ Turbo Fredriksson ]
+  * Linux 3.16 compat: smp_mb__after_clear_bit()
+
+  [ Brian Behlendorf ]
+  * Fix bug in SPLAT taskq:front
+
+  [ Tom Prince ]
+  * Install header during post-build rather than post-install.
+
+  [ Brian Behlendorf ]
+  * Make license compatibility checks consistent
+  * Update SPLAT to use kmutex_t for portability
+  * Update code to use misc_register()/misc_deregister()
+  * Remove patches directory
+  * Remove adaptive mutex implementation
+  * Remove sysctl_vfs_cache_pressure assumption
+  * Remove utsname() wrapper
+  * Remove register_sysctl() compatibility code
+  * Remove CTL_UNNUMBERED sysctl interface
+  * Map highbit64() to fls64()
+  * Simplify the time compatibility wrappers
+  * Remove atomic64_xchg() wrappers
+  * Remove uintptr_t typedef
+  * Remove linux/uaccess.h header check
+  * Remove kmalloc_node() compatibility code
+  * Remove i_mutex() configure check
+  * Remove mutex_lock_nested() wrapper
+  * Remove on_each_cpu() wrapper
+  * Remove get_vmalloc_info() wrapper
+  * Remove global memory variables
+  * Remove shrink_{i,d}node_cache() wrappers
+  * Remove kallsyms_lookup_name() wrapper
+  * Remove user_path_dir() wrapper
+  * Remove set_fs_pwd() configure check
+  * Add vfs_unlink() and vfs_rename() comments
+  * Remove credential configure checks.
+  * Update put_task_struct() comments
+  * Remove proc_handler() wrapper
+  * Remove kvasprintf() wrapper
+  * Remove kern_path() wrapper
+  * Remove vfs_fsync() wrapper
+
+  [ Tim Chase ]
+  * Linux 3.12 compat: shrinker semantics
+
+  [ Richard Yao ]
+  * kmem_cache: Call constructor/destructor on each alloc/free
+  * Kernel header installation should respect --prefix
+
+  [ Alexander Pyhalov ]
+  * Fix modules installation directory
+
+  [ Marcel Wysocki ]
+  * Add config/compile to config/.gitignore
+
+  [ Brian Behlendorf ]
+  * Lower minimum objects/slab threshold
+  * Retire legacy debugging infrastructure
+
+  [ Ned Bass ]
+  * Remove compat includes from sys/types.h
+
+  [ Chunwei Chen ]
+  * mutex: force serialization on mutex_exit() to fix races
+
+  [ Brian Behlendorf ]
+  * Fix debug object on stack warning
+
+  [ Tim Chase ]
+  * Use current_kernel_time() in the time compatibility wrappers
+
+  [ Richard Yao ]
+  * Revert "Add PF_NOFS debugging flag"
+
+  [ Brian Behlendorf ]
+  * Refactor existing code
+  * Fix kmem cstyle issues
+  * Refactor generic memory allocation interfaces
+
+  [ Richard Yao ]
+  * Add hooks for disabling direct reclaim
+  * Enforce architecture-specific barriers around clear_bit()
+
+  [ Brian Behlendorf ]
+  * Make slab reclaim more aggressive
+  * Update spl-module-parameters(5) man page
+  * Reduce kmem cache deadlock threshold
+  * Refine slab cache sizing
+  * Fix kmem cache deadlock logic
+  * Use __get_free_pages() for emergency objects
+  * Fix GFP_KERNEL allocations flags
+  * Optimize vmem_alloc() retry path
+
+  [ Chunwei Chen ]
+  * Fix spl_hostid module parameter
+
+  [ Brian Behlendorf ]
+  * Retire spl_module_init()/spl_module_fini()
+
+  [ Darik Horn ]
+  * Update gbp.conf for snapshot builds.
+
+ -- Darik Horn <dajhorn@vanadac.com>  Mon, 02 Mar 2015 18:32:07 -0500
+
 spl-linux (0.6.3-14~utopic) utopic; urgency=low
 
   [ Tom Prince ]
