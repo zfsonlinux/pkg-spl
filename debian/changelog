@@ -1,3 +1,15 @@
+spl-linux (0.6.3-15~utopic~2.gbp285724) utopic; urgency=low
+
+  ** SNAPSHOT build @28572457703d9a8ea98573a4bf2768d26804d644 **
+
+  [ Brian Behlendorf ]
+  * Fix cstyle issue in mutex.h
+  * Retire MUTEX_OWNER checks
+  * Add MUTEX_FSTRANS mutex type
+  * Reduce splat_taskq_test2_impl() stack frame size
+
+ -- Darik Horn <dajhorn@vanadac.com>  Tue, 03 Mar 2015 20:46:23 -0500
+
 spl-linux (0.6.3-15~utopic~1.gbpcb9274) utopic; urgency=low
 
   ** SNAPSHOT build @cb9274b66ea821c574383dc462a3825fd4218cfb **
