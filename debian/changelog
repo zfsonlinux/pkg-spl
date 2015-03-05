@@ -1,3 +1,13 @@
+spl-linux (0.6.3.0-15~vivid~3.gbpc9e490) vivid; urgency=low
+
+  ** SNAPSHOT build @c9e490a043861544001d230d1767856f41719ad7 **
+
+  * Revert "Tag spl-0.6.3-1.2"
+  * Revert "Tag spl-0.6.3-1.1"
+  * Subvert Launchpad orig versioning.
+
+ -- Darik Horn <dajhorn@vanadac.com>  Wed, 04 Mar 2015 21:00:14 -0500
+
 spl-linux (0.6.3-15~vivid~2.gbp61c8ef) vivid; urgency=low
 
   ** SNAPSHOT build @61c8efb162db92bfe440646222dae01bd8380aab **
