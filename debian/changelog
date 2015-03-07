@@ -1,3 +1,9 @@
+spl-linux (0.6.3-19-6ab086-jessie) jessie; urgency=low
+
+  * New upstream GIT tag.
+
+ -- Turbo Fredriksson <turbo@debian.org>  Sat, 07 Mar 2015 17:09:06 +0100
+
 spl-linux (0.6.3-18-c1bc8e-jessie) jessie; urgency=low
 
   * New upstream GIT tag.
