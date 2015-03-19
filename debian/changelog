@@ -1,3 +1,13 @@
+spl-linux (0.6.3-22-6ab086-wheezy) wheezy; urgency=low
+
+  * Add a depends on linux-headers-amd64 for spl-dkms.
+    The headers need to be configured before spl-dkms configures (builds
+    the modules). This because spl-dkms depends on dkms, but dkms only
+    have a Recommends on linux-headers-amd64 - recommends isn't ordered
+    before the actual package
+
+ -- Turbo Fredriksson <turbo@debian.org>  Fri, 20 Mar 2015 00:46:38 +0100
+
 spl-linux (0.6.3-21-6ab086-wheezy) wheezy; urgency=low
 
   * New upstream GIT tag.
