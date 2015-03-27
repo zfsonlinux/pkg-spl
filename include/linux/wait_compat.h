@@ -1,5 +1,5 @@
 /*****************************************************************************\
- *  Copyright (C) 2007-2010 Lawrence Livermore National Security, LLC.
+ *  Copyright (C) 2007-2014 Lawrence Livermore National Security, LLC.
  *  Copyright (C) 2007 The Regents of the University of California.
  *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
  *  Written by Brian Behlendorf <behlendorf1@llnl.gov>.
@@ -22,38 +22,24 @@
  *  with the SPL.  If not, see <http://www.gnu.org/licenses/>.
 \*****************************************************************************/
 
-#ifndef _SPL_SUNDDI_H
-#define _SPL_SUNDDI_H
+#ifndef _SPL_WAIT_COMPAT_H
+#define _SPL_WAIT_COMPAT_H
 
-#include <sys/cred.h>
-#include <sys/uio.h>
-#include <sys/sunldi.h>
-#include <sys/mutex.h>
-#include <sys/u8_textprep.h>
-#include <sys/vnode.h>
 
-typedef int ddi_devid_t;
+#ifndef HAVE_WAIT_ON_BIT_ACTION
+#  define spl_wait_on_bit(word, bit, mode) wait_on_bit(word, bit, mode)
+#else
 
-#define	DDI_DEV_T_NONE				((dev_t)-1)
-#define	DDI_DEV_T_ANY				((dev_t)-2)
-#define	DI_MAJOR_T_UNKNOWN			((major_t)0)
+static inline int
+spl_bit_wait(void *word)
+{
+        schedule();
+        return 0;
+}
 
-#define	DDI_PROP_DONTPASS			0x0001
-#define	DDI_PROP_CANSLEEP			0x0002
+#define spl_wait_on_bit(word, bit, mode)			\
+	wait_on_bit(word, bit, spl_bit_wait, mode)
 
-#define	DDI_SUCCESS				0
-#define	DDI_FAILURE				-1
+#endif /* HAVE_WAIT_ON_BIT_ACTION */
 
-#define	ddi_prop_lookup_string(x1,x2,x3,x4,x5)	(*x5 = NULL)
-#define	ddi_prop_free(x)			(void)0
-#define	ddi_root_node()				(void)0
-
-extern int ddi_strtoul(const char *, char **, int, unsigned long *);
-extern int ddi_strtol(const char *, char **, int, long *);
-extern int ddi_strtoull(const char *, char **, int, unsigned long long *);
-extern int ddi_strtoll(const char *, char **, int, long long *);
-
-extern int ddi_copyin(const void *from, void *to, size_t len, int flags);
-extern int ddi_copyout(const void *from, void *to, size_t len, int flags);
-
-#endif /* SPL_SUNDDI_H */
+#endif /* SPL_WAIT_COMPAT_H */
