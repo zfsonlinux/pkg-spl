@@ -1,3 +1,9 @@
+spl-linux (0.6.3-1.3-1~jessie) jessie; urgency=low
+
+  * Build for Jessie.
+
+ -- Turbo Fredriksson <turbo@debian.org>  Fri, 27 Mar 2015 03:50:00 +0100
+
 spl-linux (0.6.3-1.3-1~wheezy) wheezy; urgency=low
 
   * New upstream release - spl-0.6.3-1.3.
