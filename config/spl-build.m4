@@ -229,7 +229,7 @@ AC_DEFUN([SPL_AC_RPM], [
 	RPM_SPEC_DIR="rpm/generic"
 	AC_ARG_WITH([spec],
 		AS_HELP_STRING([--with-spec=SPEC],
-		[Spec files 'generic|fedora']),
+		[Spec files 'generic|redhat']),
 		[RPM_SPEC_DIR="rpm/$withval"])
 
 	AC_MSG_CHECKING([whether spec files are available])
@@ -1033,7 +1033,7 @@ AC_DEFUN([SPL_AC_FS_STRUCT_SPINLOCK], [
 		#include <linux/sched.h>
 		#include <linux/fs_struct.h>
 	],[
-		struct fs_struct fs;
+		static struct fs_struct fs;
 		spin_lock_init(&fs.lock);
 	],[
 		AC_MSG_RESULT(yes)
