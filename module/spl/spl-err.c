@@ -26,45 +26,81 @@
 
 #include <sys/sysmacros.h>
 #include <sys/cmn_err.h>
-#include <spl-debug.h>
+#include <linux/ratelimit.h>
 
-#ifdef SS_DEBUG_SUBSYS
-#undef SS_DEBUG_SUBSYS
-#endif
-
-#define SS_DEBUG_SUBSYS SS_GENERIC
-
-#ifdef DEBUG_LOG
-static char ce_prefix[CE_IGNORE][10] = { "", "NOTICE: ", "WARNING: ", "" };
-static char ce_suffix[CE_IGNORE][2] = { "", "\n", "\n", "" };
-#endif
+/*
+ * Limit the number of stack traces dumped to not more than 5 every
+ * 60 seconds to prevent denial-of-service attacks from debug code.
+ */
+DEFINE_RATELIMIT_STATE(dumpstack_ratelimit_state, 60 * HZ, 5);
 
 void
-vpanic(const char *fmt, va_list ap)
+spl_dumpstack(void)
 {
-	char msg[MAXMSGLEN];
+	if (__ratelimit(&dumpstack_ratelimit_state)) {
+		printk("Showing stack for process %d\n", current->pid);
+		dump_stack();
+	}
+}
+EXPORT_SYMBOL(spl_dumpstack);
 
-	vsnprintf(msg, MAXMSGLEN - 1, fmt, ap);
-	PANIC("%s", msg);
-} /* vpanic() */
-EXPORT_SYMBOL(vpanic);
+int
+spl_panic(const char *file, const char *func, int line, const char *fmt, ...) {
+	const char *newfile;
+	char msg[MAXMSGLEN];
+	va_list ap;
+
+	newfile = strrchr(file, '/');
+	if (newfile != NULL)
+		newfile = newfile + 1;
+	else
+		newfile = file;
+
+	va_start(ap, fmt);
+	(void) vsnprintf(msg, sizeof (msg), fmt, ap);
+	va_end(ap);
+
+	printk(KERN_EMERG "%s", msg);
+	printk(KERN_EMERG "PANIC at %s:%d:%s()\n", newfile, line, func);
+	spl_dumpstack();
+
+	/* Halt the thread to facilitate further debugging */
+	set_task_state(current, TASK_UNINTERRUPTIBLE);
+	while (1)
+		schedule();
+
+	/* Unreachable */
+	return (1);
+}
+EXPORT_SYMBOL(spl_panic);
 
 void
 vcmn_err(int ce, const char *fmt, va_list ap)
 {
 	char msg[MAXMSGLEN];
 
-	if (ce == CE_PANIC)
-		vpanic(fmt, ap);
+	vsnprintf(msg, MAXMSGLEN - 1, fmt, ap);
 
-	if (ce != CE_NOTE) {
-		vsnprintf(msg, MAXMSGLEN - 1, fmt, ap);
+	switch (ce) {
+	case CE_IGNORE:
+		break;
+	case CE_CONT:
+		printk("%s", msg);
+		break;
+	case CE_NOTE:
+		printk(KERN_NOTICE "NOTICE: %s\n", msg);
+		break;
+	case CE_WARN:
+		printk(KERN_WARNING "WARNING: %s\n", msg);
+		break;
+	case CE_PANIC:
+		printk(KERN_EMERG "PANIC: %s\n", msg);
+		spl_dumpstack();
 
-		if (fmt[0] == '!')
-			SDEBUG(SD_INFO, "%s%s%s",
-			       ce_prefix[ce], msg, ce_suffix[ce]);
-		else
-			SERROR("%s%s%s", ce_prefix[ce], msg, ce_suffix[ce]);
+		/* Halt the thread to facilitate further debugging */
+		set_task_state(current, TASK_UNINTERRUPTIBLE);
+		while (1)
+			schedule();
 	}
 } /* vcmn_err() */
 EXPORT_SYMBOL(vcmn_err);
@@ -79,4 +115,3 @@ cmn_err(int ce, const char *fmt, ...)
 	va_end(ap);
 } /* cmn_err() */
 EXPORT_SYMBOL(cmn_err);
-
