@@ -1,3 +1,20 @@
+spl-linux (0.6.3.1-15~utopic~5.gbp18e9d3) utopic; urgency=low
+
+  ** SNAPSHOT build @18e9d36fd22e9ca476c28ebe9341472b7105c635 **
+
+  [ Tim Chase ]
+  * Add mutex_enter_nested() which maps to mutex_lock_nested()
+  * Set HAVE_FS_STRUCT_SPINLOCK correctly when CONFIG_FRAME_WARN==1024
+
+  [ Hajo Möller ]
+  * Fix warning about AM_INIT_AUTOMAKE arguments
+
+  [ Brian Behlendorf ]
+  * Remove rpm/fedora directory
+  * Add RHEL style kmod packages
+
+ -- Darik Horn <dajhorn@vanadac.com>  Mon, 30 Mar 2015 19:42:14 -0500
+
 spl-linux (0.6.3-15~utopic~2.gbp285724) utopic; urgency=low
 
   ** SNAPSHOT build @28572457703d9a8ea98573a4bf2768d26804d644 **
