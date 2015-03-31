@@ -1,3 +1,28 @@
+spl-linux (0.6.3.1-15~vivid~6.gbp1f1f14) UNRELEASED; urgency=medium
+
+  ** SNAPSHOT build @1f1f144421844a6087b1e9f3ae0cfd6a4ad699c1 **
+
+  * Update changelog for 0.6.3.1-15~vivid~5.gbp99f535 release
+
+ -- Darik Horn <dajhorn@vanadac.com>  Mon, 30 Mar 2015 19:39:58 -0500
+
+spl-linux (0.6.3.1-15~vivid~5.gbp99f535) vivid; urgency=low
+
+  ** SNAPSHOT build @99f53527427eb18aaef546700267cc96d5b8159d **
+
+  [ Tim Chase ]
+  * Add mutex_enter_nested() which maps to mutex_lock_nested()
+  * Set HAVE_FS_STRUCT_SPINLOCK correctly when CONFIG_FRAME_WARN==1024
+
+  [ Hajo Möller ]
+  * Fix warning about AM_INIT_AUTOMAKE arguments
+
+  [ Brian Behlendorf ]
+  * Remove rpm/fedora directory
+  * Add RHEL style kmod packages
+
+ -- Darik Horn <dajhorn@vanadac.com>  Mon, 30 Mar 2015 19:09:38 -0500
+
 spl-linux (0.6.3.0-15~vivid~3.gbpc9e490) vivid; urgency=low
 
   ** SNAPSHOT build @c9e490a043861544001d230d1767856f41719ad7 **
