@@ -1,5 +1,5 @@
 /*****************************************************************************\
- *  Copyright (C) 2007-2010 Lawrence Livermore National Security, LLC.
+ *  Copyright (C) 2007-2014 Lawrence Livermore National Security, LLC.
  *  Copyright (C) 2007 The Regents of the University of California.
  *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
  *  Written by Brian Behlendorf <behlendorf1@llnl.gov>.
@@ -22,23 +22,25 @@
  *  with the SPL.  If not, see <http://www.gnu.org/licenses/>.
 \*****************************************************************************/
 
-#ifndef _SPL_KALLSYMS_COMPAT_H
-#define _SPL_KALLSYMS_COMPAT_H
+#ifndef _SPL_WAIT_COMPAT_H
+#define _SPL_WAIT_COMPAT_H
 
-#define SYMBOL_POISON ((void*)0xabcddcba)
+#include <linux/sched.h>
 
-#ifdef HAVE_KALLSYMS_LOOKUP_NAME
-
-#include <linux/kallsyms.h>
-#define spl_kallsyms_lookup_name(name) kallsyms_lookup_name(name)
-
+#ifndef HAVE_WAIT_ON_BIT_ACTION
+#  define spl_wait_on_bit(word, bit, mode) wait_on_bit(word, bit, mode)
 #else
 
-extern wait_queue_head_t spl_kallsyms_lookup_name_waitq;
-typedef unsigned long (*kallsyms_lookup_name_t)(const char *);
-extern kallsyms_lookup_name_t spl_kallsyms_lookup_name_fn;
-#define spl_kallsyms_lookup_name(name) spl_kallsyms_lookup_name_fn(name)
+static inline int
+spl_bit_wait(void *word)
+{
+        schedule();
+        return 0;
+}
 
-#endif /* HAVE_KALLSYMS_LOOKUP_NAME */
+#define spl_wait_on_bit(word, bit, mode)			\
+	wait_on_bit(word, bit, spl_bit_wait, mode)
 
-#endif /* _SPL_KALLSYMS_COMPAT_H */
+#endif /* HAVE_WAIT_ON_BIT_ACTION */
+
+#endif /* SPL_WAIT_COMPAT_H */
