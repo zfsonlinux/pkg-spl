@@ -1,3 +1,18 @@
+spl-linux (0.6.3.1-15~utopic~6.gbp7f1565) utopic; urgency=low
+
+  ** SNAPSHOT build @7f156568c97af197680792f14a95b8401e67fc5d **
+
+  [ Chris Dunlop ]
+  * Add crgetzoneid() stub
+
+  [ Tim Chase ]
+  * Don't allow shrinking a PF_FSTRANS context
+
+  [ Brian Behlendorf ]
+  * Clear PF_FSTRANS over vfs_sync()
+
+ -- Darik Horn <dajhorn@vanadac.com>  Tue, 07 Apr 2015 19:56:21 -0500
+
 spl-linux (0.6.3.1-15~utopic~5.gbp18e9d3) utopic; urgency=low
 
   ** SNAPSHOT build @18e9d36fd22e9ca476c28ebe9341472b7105c635 **
