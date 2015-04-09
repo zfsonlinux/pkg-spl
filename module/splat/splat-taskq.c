@@ -24,9 +24,12 @@
  *  Solaris Porting LAyer Tests (SPLAT) Task Queue Tests.
 \*****************************************************************************/
 
-#include <sys/taskq.h>
-#include <sys/random.h>
 #include <sys/kmem.h>
+#include <sys/vmem.h>
+#include <sys/random.h>
+#include <sys/taskq.h>
+#include <sys/timer.h>
+#include <linux/delay.h>
 #include "splat-internal.h"
 
 #define SPLAT_TASKQ_NAME		"taskq"
@@ -117,9 +120,10 @@ splat_taskq_test1_impl(struct file *file, void *arg, boolean_t prealloc)
 	taskq_t *tq;
 	taskqid_t id;
 	splat_taskq_arg_t tq_arg;
-	taskq_ent_t tqe;
+	taskq_ent_t *tqe;
 
-	taskq_init_ent(&tqe);
+	tqe = kmem_alloc(sizeof (taskq_ent_t), KM_SLEEP);
+	taskq_init_ent(tqe);
 
 	splat_vprint(file, SPLAT_TASKQ_TEST1_NAME,
 		     "Taskq '%s' creating (%s dispatch)\n",
@@ -130,6 +134,7 @@ splat_taskq_test1_impl(struct file *file, void *arg, boolean_t prealloc)
 		splat_vprint(file, SPLAT_TASKQ_TEST1_NAME,
 		           "Taskq '%s' create failed\n",
 		           SPLAT_TASKQ_TEST1_NAME);
+		kmem_free(tqe, sizeof (taskq_ent_t));
 		return -EINVAL;
 	}
 
@@ -143,8 +148,8 @@ splat_taskq_test1_impl(struct file *file, void *arg, boolean_t prealloc)
 	           tq_arg.name, sym2str(splat_taskq_test13_func));
 	if (prealloc) {
 		taskq_dispatch_ent(tq, splat_taskq_test13_func,
-		                   &tq_arg, TQ_SLEEP, &tqe);
-		id = tqe.tqent_id;
+		                   &tq_arg, TQ_SLEEP, tqe);
+		id = tqe->tqent_id;
 	} else {
 		id = taskq_dispatch(tq, splat_taskq_test13_func,
 				    &tq_arg, TQ_SLEEP);
@@ -154,6 +159,7 @@ splat_taskq_test1_impl(struct file *file, void *arg, boolean_t prealloc)
 		splat_vprint(file, SPLAT_TASKQ_TEST1_NAME,
 		             "Taskq '%s' function '%s' dispatch failed\n",
 		             tq_arg.name, sym2str(splat_taskq_test13_func));
+		kmem_free(tqe, sizeof (taskq_ent_t));
 		taskq_destroy(tq);
 		return -EINVAL;
 	}
@@ -164,6 +170,7 @@ splat_taskq_test1_impl(struct file *file, void *arg, boolean_t prealloc)
 	splat_vprint(file, SPLAT_TASKQ_TEST1_NAME, "Taskq '%s' destroying\n",
 	           tq_arg.name);
 
+	kmem_free(tqe, sizeof (taskq_ent_t));
 	taskq_destroy(tq);
 
 	return (tq_arg.flag) ? 0 : -EINVAL;
@@ -224,7 +231,7 @@ static int
 splat_taskq_test2_impl(struct file *file, void *arg, boolean_t prealloc) {
 	taskq_t *tq[TEST2_TASKQS] = { NULL };
 	taskqid_t id;
-	splat_taskq_arg_t tq_args[TEST2_TASKQS];
+	splat_taskq_arg_t *tq_args[TEST2_TASKQS] = { NULL };
 	taskq_ent_t *func1_tqes = NULL;
 	taskq_ent_t *func2_tqes = NULL;
 	int i, rc = 0;
@@ -245,6 +252,12 @@ splat_taskq_test2_impl(struct file *file, void *arg, boolean_t prealloc) {
 		taskq_init_ent(&func1_tqes[i]);
 		taskq_init_ent(&func2_tqes[i]);
 
+		tq_args[i] = kmalloc(sizeof (splat_taskq_arg_t), GFP_KERNEL);
+		if (tq_args[i] == NULL) {
+			rc = -ENOMEM;
+			break;
+		}
+
 		splat_vprint(file, SPLAT_TASKQ_TEST2_NAME,
 			     "Taskq '%s/%d' creating (%s dispatch)\n",
 			     SPLAT_TASKQ_TEST2_NAME, i,
@@ -260,28 +273,28 @@ splat_taskq_test2_impl(struct file *file, void *arg, boolean_t prealloc) {
 			break;
 		}
 
-		tq_args[i].flag = i;
-		tq_args[i].id   = i;
-		tq_args[i].file = file;
-		tq_args[i].name = SPLAT_TASKQ_TEST2_NAME;
+		tq_args[i]->flag = i;
+		tq_args[i]->id   = i;
+		tq_args[i]->file = file;
+		tq_args[i]->name = SPLAT_TASKQ_TEST2_NAME;
 
 		splat_vprint(file, SPLAT_TASKQ_TEST2_NAME,
 		           "Taskq '%s/%d' function '%s' dispatching\n",
-			   tq_args[i].name, tq_args[i].id,
+			   tq_args[i]->name, tq_args[i]->id,
 		           sym2str(splat_taskq_test2_func1));
 		if (prealloc) {
 			taskq_dispatch_ent(tq[i], splat_taskq_test2_func1,
-			                 &tq_args[i], TQ_SLEEP, &func1_tqes[i]);
+			    tq_args[i], TQ_SLEEP, &func1_tqes[i]);
 			id = func1_tqes[i].tqent_id;
 		} else {
 			id = taskq_dispatch(tq[i], splat_taskq_test2_func1,
-					    &tq_args[i], TQ_SLEEP);
+			    tq_args[i], TQ_SLEEP);
 		}
 
 		if (id == 0) {
 			splat_vprint(file, SPLAT_TASKQ_TEST2_NAME,
 			           "Taskq '%s/%d' function '%s' dispatch "
-			           "failed\n", tq_args[i].name, tq_args[i].id,
+			           "failed\n", tq_args[i]->name, tq_args[i]->id,
 			           sym2str(splat_taskq_test2_func1));
 			rc = -EINVAL;
 			break;
@@ -289,21 +302,21 @@ splat_taskq_test2_impl(struct file *file, void *arg, boolean_t prealloc) {
 
 		splat_vprint(file, SPLAT_TASKQ_TEST2_NAME,
 		           "Taskq '%s/%d' function '%s' dispatching\n",
-			   tq_args[i].name, tq_args[i].id,
+			   tq_args[i]->name, tq_args[i]->id,
 		           sym2str(splat_taskq_test2_func2));
 		if (prealloc) {
 			taskq_dispatch_ent(tq[i], splat_taskq_test2_func2,
-			                &tq_args[i], TQ_SLEEP, &func2_tqes[i]);
+			    tq_args[i], TQ_SLEEP, &func2_tqes[i]);
 			id = func2_tqes[i].tqent_id;
 		} else {
 			id = taskq_dispatch(tq[i], splat_taskq_test2_func2,
-			                    &tq_args[i], TQ_SLEEP);
+			    tq_args[i], TQ_SLEEP);
 		}
 
 		if (id == 0) {
 			splat_vprint(file, SPLAT_TASKQ_TEST2_NAME, "Taskq "
 				     "'%s/%d' function '%s' dispatch failed\n",
-			             tq_args[i].name, tq_args[i].id,
+			             tq_args[i]->name, tq_args[i]->id,
 			             sym2str(splat_taskq_test2_func2));
 			rc = -EINVAL;
 			break;
@@ -313,31 +326,36 @@ splat_taskq_test2_impl(struct file *file, void *arg, boolean_t prealloc) {
 	/* When rc is set we're effectively just doing cleanup here, so
 	 * ignore new errors in that case.  They just cause noise. */
 	for (i = 0; i < TEST2_TASKQS; i++) {
+		if (tq_args[i] == NULL)
+			continue;
+
 		if (tq[i] != NULL) {
 			splat_vprint(file, SPLAT_TASKQ_TEST2_NAME,
 			           "Taskq '%s/%d' waiting\n",
-			           tq_args[i].name, tq_args[i].id);
+			           tq_args[i]->name, tq_args[i]->id);
 			taskq_wait(tq[i]);
 			splat_vprint(file, SPLAT_TASKQ_TEST2_NAME,
 			           "Taskq '%s/%d; destroying\n",
-			          tq_args[i].name, tq_args[i].id);
+			          tq_args[i]->name, tq_args[i]->id);
 
 			taskq_destroy(tq[i]);
 
-			if (!rc && tq_args[i].flag != ((i * 2) + 1)) {
+			if (!rc && tq_args[i]->flag != ((i * 2) + 1)) {
 				splat_vprint(file, SPLAT_TASKQ_TEST2_NAME,
 				           "Taskq '%s/%d' processed tasks "
 				           "out of order; %d != %d\n",
-				           tq_args[i].name, tq_args[i].id,
-				           tq_args[i].flag, i * 2 + 1);
+				           tq_args[i]->name, tq_args[i]->id,
+				           tq_args[i]->flag, i * 2 + 1);
 				rc = -EINVAL;
 			} else {
 				splat_vprint(file, SPLAT_TASKQ_TEST2_NAME,
 				           "Taskq '%s/%d' processed tasks "
 					   "in the correct order; %d == %d\n",
-				           tq_args[i].name, tq_args[i].id,
-				           tq_args[i].flag, i * 2 + 1);
+				           tq_args[i]->name, tq_args[i]->id,
+				           tq_args[i]->flag, i * 2 + 1);
 			}
+
+			kfree(tq_args[i]);
 		}
 	}
 out:
@@ -371,41 +389,51 @@ static int
 splat_taskq_test3_impl(struct file *file, void *arg, boolean_t prealloc)
 {
 	taskqid_t id;
-	splat_taskq_arg_t tq_arg;
-	taskq_ent_t tqe;
+	splat_taskq_arg_t *tq_arg;
+	taskq_ent_t *tqe;
+	int error;
 
-	taskq_init_ent(&tqe);
+	tq_arg = kmem_alloc(sizeof (splat_taskq_arg_t), KM_SLEEP);
+	tqe = kmem_alloc(sizeof (taskq_ent_t), KM_SLEEP);
+	taskq_init_ent(tqe);
 
-	tq_arg.flag = 0;
-	tq_arg.id   = 0;
-	tq_arg.file = file;
-	tq_arg.name = SPLAT_TASKQ_TEST3_NAME;
+	tq_arg->flag = 0;
+	tq_arg->id   = 0;
+	tq_arg->file = file;
+	tq_arg->name = SPLAT_TASKQ_TEST3_NAME;
 
 	splat_vprint(file, SPLAT_TASKQ_TEST3_NAME,
 	           "Taskq '%s' function '%s' %s dispatch\n",
-	           tq_arg.name, sym2str(splat_taskq_test13_func),
+	           tq_arg->name, sym2str(splat_taskq_test13_func),
 		   prealloc ? "prealloc" : "dynamic");
 	if (prealloc) {
 		taskq_dispatch_ent(system_taskq, splat_taskq_test13_func,
-		                   &tq_arg, TQ_SLEEP, &tqe);
-		id = tqe.tqent_id;
+		                   tq_arg, TQ_SLEEP, tqe);
+		id = tqe->tqent_id;
 	} else {
 		id = taskq_dispatch(system_taskq, splat_taskq_test13_func,
-				    &tq_arg, TQ_SLEEP);
+				    tq_arg, TQ_SLEEP);
 	}
 
 	if (id == 0) {
 		splat_vprint(file, SPLAT_TASKQ_TEST3_NAME,
 		           "Taskq '%s' function '%s' dispatch failed\n",
-		           tq_arg.name, sym2str(splat_taskq_test13_func));
+		           tq_arg->name, sym2str(splat_taskq_test13_func));
+		kmem_free(tqe, sizeof (taskq_ent_t));
+		kmem_free(tq_arg, sizeof (splat_taskq_arg_t));
 		return -EINVAL;
 	}
 
 	splat_vprint(file, SPLAT_TASKQ_TEST3_NAME, "Taskq '%s' waiting\n",
-	           tq_arg.name);
+	           tq_arg->name);
 	taskq_wait(system_taskq);
 
-	return (tq_arg.flag) ? 0 : -EINVAL;
+	error = (tq_arg->flag) ? 0 : -EINVAL;
+
+	kmem_free(tqe, sizeof (taskq_ent_t));
+	kmem_free(tq_arg, sizeof (splat_taskq_arg_t));
+
+	return (error);
 }
 
 static int
@@ -814,10 +842,11 @@ splat_taskq_test6_func(void *arg)
 	spin_lock(&tq_arg->lock);
 	tq_arg->order[tq_arg->flag] = tq_id->id;
 	tq_arg->flag++;
+	spin_unlock(&tq_arg->lock);
+
 	splat_vprint(tq_arg->file, tq_arg->name,
 		     "Taskqid %d complete for taskq '%s'\n",
 		     tq_id->id, tq_arg->name);
-	spin_unlock(&tq_arg->lock);
 }
 
 static int
@@ -963,8 +992,9 @@ static int
 splat_taskq_test7_impl(struct file *file, void *arg, boolean_t prealloc)
 {
 	taskq_t *tq;
-	taskq_ent_t tqe;
-	splat_taskq_arg_t tq_arg;
+	splat_taskq_arg_t *tq_arg;
+	taskq_ent_t *tqe;
+	int error;
 
 	splat_vprint(file, SPLAT_TASKQ_TEST7_NAME,
 	             "Taskq '%s' creating (%s dispatch)\n",
@@ -978,33 +1008,41 @@ splat_taskq_test7_impl(struct file *file, void *arg, boolean_t prealloc)
 		return -EINVAL;
 	}
 
-	tq_arg.depth = 0;
-	tq_arg.flag  = 0;
-	tq_arg.id    = 0;
-	tq_arg.file  = file;
-	tq_arg.name  = SPLAT_TASKQ_TEST7_NAME;
-	tq_arg.tq    = tq;
+	tq_arg = kmem_alloc(sizeof (splat_taskq_arg_t), KM_SLEEP);
+	tqe = kmem_alloc(sizeof (taskq_ent_t), KM_SLEEP);
+
+	tq_arg->depth = 0;
+	tq_arg->flag  = 0;
+	tq_arg->id    = 0;
+	tq_arg->file  = file;
+	tq_arg->name  = SPLAT_TASKQ_TEST7_NAME;
+	tq_arg->tq    = tq;
 
 	if (prealloc) {
-		taskq_init_ent(&tqe);
-		tq_arg.tqe = &tqe;
+		taskq_init_ent(tqe);
+		tq_arg->tqe = tqe;
 	} else {
-		tq_arg.tqe = NULL;
+		tq_arg->tqe = NULL;
 	}
 
-	splat_taskq_test7_func(&tq_arg);
+	splat_taskq_test7_func(tq_arg);
 
-	if (tq_arg.flag == 0) {
+	if (tq_arg->flag == 0) {
 		splat_vprint(file, SPLAT_TASKQ_TEST7_NAME,
-		             "Taskq '%s' waiting\n", tq_arg.name);
+		             "Taskq '%s' waiting\n", tq_arg->name);
 		taskq_wait_all(tq, SPLAT_TASKQ_DEPTH_MAX);
 	}
 
+	error = (tq_arg->depth == SPLAT_TASKQ_DEPTH_MAX ? 0 : -EINVAL);
+
+	kmem_free(tqe, sizeof (taskq_ent_t));
+	kmem_free(tq_arg, sizeof (splat_taskq_arg_t));
+
 	splat_vprint(file, SPLAT_TASKQ_TEST7_NAME,
-	              "Taskq '%s' destroying\n", tq_arg.name);
+	              "Taskq '%s' destroying\n", tq_arg->name);
 	taskq_destroy(tq);
 
-	return tq_arg.depth == SPLAT_TASKQ_DEPTH_MAX ? 0 : -EINVAL;
+	return (error);
 }
 
 static int

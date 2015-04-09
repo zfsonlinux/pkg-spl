@@ -29,14 +29,6 @@
 #include <linux/spinlock.h>
 #include <sys/types.h>
 
-#ifndef HAVE_ATOMIC64_CMPXCHG
-#define atomic64_cmpxchg(v, o, n)       (cmpxchg(&((v)->counter), (o), (n)))
-#endif
-
-#ifndef HAVE_ATOMIC64_XCHG
-#define atomic64_xchg(v, n)             (xchg(&((v)->counter), n))
-#endif
-
 /*
  * Two approaches to atomic operations are implemented each with its
  * own benefits are drawbacks imposed by the Solaris API.  Neither
@@ -156,6 +148,19 @@ atomic_cas_32(volatile uint32_t *target,  uint32_t cmp,
 	return rc;
 }
 
+static __inline__ uint32_t
+atomic_swap_32(volatile uint32_t *target,  uint32_t newval)
+{
+	uint32_t rc;
+
+	spin_lock(&atomic32_lock);
+	rc = *target;
+	*target = newval;
+	spin_unlock(&atomic32_lock);
+
+	return rc;
+}
+
 static __inline__ void
 atomic_inc_64(volatile uint64_t *target)
 {
@@ -253,6 +258,18 @@ atomic_cas_64(volatile uint64_t *target,  uint64_t cmp,
 	return rc;
 }
 
+static __inline__ uint64_t
+atomic_swap_64(volatile uint64_t *target,  uint64_t newval)
+{
+	uint64_t rc;
+
+	spin_lock(&atomic64_lock);
+	rc = *target;
+	*target = newval;
+	spin_unlock(&atomic64_lock);
+
+	return rc;
+}
 
 #else /* ATOMIC_SPINLOCK */
 
@@ -265,6 +282,7 @@ atomic_cas_64(volatile uint64_t *target,  uint64_t cmp,
 #define atomic_add_32_nv(v, i)	atomic_add_return((i), (atomic_t *)(v))
 #define atomic_sub_32_nv(v, i)	atomic_sub_return((i), (atomic_t *)(v))
 #define atomic_cas_32(v, x, y)	atomic_cmpxchg((atomic_t *)(v), x, y)
+#define atomic_swap_32(v, x)	atomic_xchg((atomic_t *)(v), x)
 #define atomic_inc_64(v)	atomic64_inc((atomic64_t *)(v))
 #define atomic_dec_64(v)	atomic64_dec((atomic64_t *)(v))
 #define atomic_add_64(v, i)	atomic64_add((i), (atomic64_t *)(v))
@@ -274,6 +292,7 @@ atomic_cas_64(volatile uint64_t *target,  uint64_t cmp,
 #define atomic_add_64_nv(v, i)	atomic64_add_return((i), (atomic64_t *)(v))
 #define atomic_sub_64_nv(v, i)	atomic64_sub_return((i), (atomic64_t *)(v))
 #define atomic_cas_64(v, x, y)	atomic64_cmpxchg((atomic64_t *)(v), x, y)
+#define atomic_swap_64(v, x)	atomic64_xchg((atomic64_t *)(v), x)
 
 #endif /* ATOMIC_SPINLOCK */
 
