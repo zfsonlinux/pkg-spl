@@ -1,0 +1,20 @@
+Source: spl-modules
+Section: kernel
+Priority: optional
+Maintainer: Turbo Fredriksson <turbo@bayour.com>
+Build-Depends: debhelper (>= 8)
+Standards-Version: 3.9.1
+
+Package: spl-modules-=KVERS
+Provides: spl-dkms, spl-modules
+Architecture: amd64
+Recommends: linux-image-=KVERS
+Description: Solaris Porting Layer kernel modules for Linux
+ The Solaris Porting Layer (SPL) is a Linux kernel module which provides
+ many of the Solaris kernel APIs. This shim layer makes it possible to
+ run Solaris kernel code in the Linux kernel with relatively minimal
+ modification. The Solaris Porting LAyer Tests (SPLAT) is a Linux kernel
+ module which provides a testing harness for the SPL module.
+ .
+ This package provides the compiled AFS kernel module for kernel
+ version =KVERS.

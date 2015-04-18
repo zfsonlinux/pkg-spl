@@ -1,5 +1,8 @@
 #!/usr/bin/make -f
 
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
 NAME := $(shell awk '$$1 == "Name:" { print $$2; }' META)
 VERSION := $(shell dpkg-parsechangelog \
   | awk '$$1 == "Version:" { print $$2; }' | cut -d- -f1)
@@ -28,8 +31,7 @@ KIMGVER=$(shell dpkg -s linux-image-$(KVERS)-$(KARCH) | grep ^Version | sed 's/.
 	dh $@ --with dkms
 
 override_dh_prep-base-deb-files:
-	sed -e 's/##SHLIB_MAJOR##/$(SHLIB_MAJOR)/g ; s/##MODULES_BUILD_DEPENDS##/linux-headers-$(KVERS)-common, linux-headers-$(KVERS)-$(KARCH)/g' \
-	< debian/control.in > debian/control
+	sed -e 's/##SHLIB_MAJOR##/$(SHLIB_MAJOR)/g' < debian/control.in > debian/control
 
 	for templ in $(wildcard $(CURDIR)/debian/*_KVERS_*.in); do \
 		sed -e 's/##KVERS##/$(KVERS)/g ; s/#KVERS#/$(KVERS)/g ; s/_KVERS_/$(KVERS)/g ; s/##KDREV##/$(KDREV)/g ; s/#KDREV#/$(KDREV)/g ; s/_KDREV_/$(KDREV)/g ;  s/_ARCH_/$(KARCH)/g' \
@@ -96,49 +98,31 @@ override_dh_auto_install:
 
 	find '$(CURDIR)/debian/tmp' -name '*~' | xargs --no-run-if-empty rm
 
+	@# Duplicate the dkms directory for module-assistant source package
+	install -d $(CURDIR)/debian/tmp/usr/src/modules
+	cp -r $(CURDIR)/debian/tmp/usr/src/$(NAME)-$(VERSION) $(CURDIR)/debian/tmp/usr/src/modules/$(PACKAGE)
+	mkdir -p $(CURDIR)/debian/tmp/usr/src/modules/$(PACKAGE)/debian
+	cp debian/copyright debian/module/* \
+	    $(CURDIR)/debian/tmp/usr/src/modules/$(PACKAGE)/debian/
+	sed 's/^spl-linux /spl-modules /' debian/changelog \
+	    > $(CURDIR)/debian/tmp/usr/src/modules/$(PACKAGE)/debian/changelog
+	chmod 755 $(CURDIR)/debian/tmp/usr/src/modules/$(PACKAGE)/debian/rules
+	chown -R root.src $(CURDIR)/debian/tmp
+	find $(CURDIR)/debian/tmp -type d | xargs chmod 755
+	find $(CURDIR)/debian/tmp -type f -perm -100 | xargs chmod 755
+	find $(CURDIR)/debian/tmp -type f -not -perm -100 | xargs chmod 644
+	chmod 775 $(CURDIR)/debian/tmp/usr/src/modules
+	cd $(CURDIR)/debian/tmp/usr/src && tar cf $(PACKAGE).tar modules
+	rm -Rf $(CURDIR)/debian/tmp/usr/src/modules
+	bzip2 $(CURDIR)/debian/tmp/usr/src/$(PACKAGE).tar
+	chmod 644 $(CURDIR)/debian/tmp/usr/src/$(PACKAGE).tar.bz2
+	install -d $(CURDIR)/debian/spl-modules-source/usr/src
+	mv $(CURDIR)/debian/tmp/usr/src/$(PACKAGE).tar.bz2 $(CURDIR)/debian/spl-modules-source/usr/src/
+	rm -Rf $(CURDIR)/debian/spl-modules-source/usr/src/$(NAME)-$(VERSION)
+
 override_dh_dkms:
 	dh_dkms -V $(VERSION)
 
 override_dh_auto_clean:
 	@dh_auto_clean
 	@if test -e META.orig; then mv META.orig META; fi
-
-override_dh_auto_configure-modules: override_dh_prep-base-deb-files
-	sed -e 's/##KVERS##/$(KVERS)/g ; s/#KVERS#/$(KVERS)/g ; s/_KVERS_/$(KVERS)/g ; s/##KDREV##/$(KDREV)/g ; s/#KDREV#/$(KDREV)/g ; s/_KDREV_/$(KDREV)/g ; s/_ARCH_/$(DEB_HOST_ARCH)/g ; s/_IMGVER_/$(KIMGVER)/g' \
-	< debian/control.modules.in >> debian/control
-
-	@# Embed the downstream version in the module.
-	sed \
-	  -e 's/^Version:.*/Version:      $(VERSION)/' \
-	  -e 's/^Release:.*/Release:      $(REVISION)/' \
-	  -i.orig META
-	touch .nogitrelease
-
-	@# Create the makefiles and configure script.
-	./autogen.sh
-
-	@# Build the userland
-	dh_auto_configure -- \
-	  --with-config=kernel \
-	  --prefix=/usr \
-	  --with-linux=$(KSRC) \
-	  --with-linux-obj=$(KOBJ)
-
-override_dh_binary-modules: override_dh_auto_configure-modules
-	dh_testdir
-	dh_testroot
-	dh_prep
-
-	$(MAKE) -C $(CURDIR)/module modules
-
-	dh_installdocs -p${pmodules}
-	dh_install -p${pmodules}
-	dh_installchangelogs -p${pmodules}
-	dh_compress -p${pmodules}
-	dh_strip -p${pmodules}
-	dh_fixperms -p${pmodules}
-	dh_installdeb -p${pmodules}
-	dh_gencontrol -p${pmodules}
-	dh_md5sums -p${pmodules}
-
-	dh_builddeb -p${pmodules}
