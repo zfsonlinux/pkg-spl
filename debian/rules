@@ -14,28 +14,26 @@ DEB_HOST_ARCH = $(shell dpkg-architecture -qDEB_HOST_ARCH)
 endif
 
 ifndef KVERS
-KVERS=$(shell uname -r | sed 's/-$(DEB_HOST_ARCH)//')
+KVERS=$(shell uname -r | sed -e 's/-$(DEB_HOST_ARCH)//' -e 's/-[a-z].*//')
+KARCH=$(shell uname -r | sed "s/.*-\([a-z].*\)/\1/")
 endif
 
 non_epoch_version=$(shell echo $(KVERS) | perl -pe 's/^\d+://')
 PACKAGE=spl
-pmodules = $(PACKAGE)-modules-$(non_epoch_version)
+pmodules = $(PACKAGE)-modules-$(non_epoch_version)-$(KARCH)
 
-KIMGVER=$(shell dpkg -s linux-image-$(KVERS)-$(DEB_HOST_ARCH) | grep ^Version | sed 's/.*: //')
+KIMGVER=$(shell dpkg -s linux-image-$(KVERS)-$(KARCH) | grep ^Version | sed 's/.*: //')
 
 %:
 	dh $@ --with dkms
 
 override_dh_prep-base-deb-files:
-	sed -e 's/##SHLIB_MAJOR##/$(SHLIB_MAJOR)/g ; s/##MODULES_BUILD_DEPENDS##/linux-headers-$(KVERS)-common, linux-headers-$(KVERS)-$(DEB_HOST_ARCH)/g' \
+	sed -e 's/##SHLIB_MAJOR##/$(SHLIB_MAJOR)/g ; s/##MODULES_BUILD_DEPENDS##/linux-headers-$(KVERS)-common, linux-headers-$(KVERS)-$(KARCH)/g' \
 	< debian/control.in > debian/control
 
-	sed -e 's/##KVERS##/$(KVERS)/g ; s/#KVERS#/$(KVERS)/g ; s/_KVERS_/$(KVERS)/g ; s/##KDREV##/$(KDREV)/g ; s/#KDREV#/$(KDREV)/g ; s/_KDREV_/$(KDREV)/g ; s/_ARCH_/$(DEB_HOST_ARCH)/g ; s/_IMGVER_/$(KIMGVER)/g' \
-	< debian/control.modules.in >> debian/control
-
 	for templ in $(wildcard $(CURDIR)/debian/*_KVERS_*.in); do \
-		sed -e 's/##KVERS##/$(KVERS)/g ; s/#KVERS#/$(KVERS)/g ; s/_KVERS_/$(KVERS)/g ; s/##KDREV##/$(KDREV)/g ; s/#KDREV#/$(KDREV)/g ; s/_KDREV_/$(KDREV)/g ;  s/_ARCH_/$(DEB_HOST_ARCH)/g' \
-		< $$templ > `echo $$templ | sed -e 's/_KVERS_/$(KVERS)/g ; s/_ARCH_/$(DEB_HOST_ARCH)/g ; s/\.in$$//'` ; \
+		sed -e 's/##KVERS##/$(KVERS)/g ; s/#KVERS#/$(KVERS)/g ; s/_KVERS_/$(KVERS)/g ; s/##KDREV##/$(KDREV)/g ; s/#KDREV#/$(KDREV)/g ; s/_KDREV_/$(KDREV)/g ;  s/_ARCH_/$(KARCH)/g' \
+		< $$templ > `echo $$templ | sed -e 's/_KVERS_/$(KVERS)/g ; s/_ARCH_/$(KARCH)/g ; s/_ARCH_/$(DEB_HOST_ARCH)/g ;  ; s/\.in$$//'` ; \
 	done
 
 override_dh_auto_configure: override_dh_prep-base-deb-files
@@ -49,8 +47,9 @@ override_dh_auto_configure: override_dh_prep-base-deb-files
 	@# Create the makefiles and configure script.
 	./autogen.sh
 
-	@# Build the userland and the modules
+	@# Build the userland
 	dh_auto_configure -- \
+	  --with-config=user \
 	  --prefix=/usr \
 	  --with-linux=$(KSRC) \
 	  --with-linux-obj=$(KOBJ)
@@ -95,7 +94,7 @@ override_dh_auto_install:
 	echo 'cp "$$@"'  >>'$(CURDIR)/debian/tmp/usr/src/$(NAME)-$(VERSION)/cp'
 	chmod 755 '$(CURDIR)/debian/tmp/usr/src/$(NAME)-$(VERSION)/cp'
 
-	find '$(CURDIR)/debian/tmp' -name '*~' | xargs rm
+	find '$(CURDIR)/debian/tmp' -name '*~' | xargs --no-run-if-empty rm
 
 override_dh_dkms:
 	dh_dkms -V $(VERSION)
@@ -104,22 +103,28 @@ override_dh_auto_clean:
 	@dh_auto_clean
 	@if test -e META.orig; then mv META.orig META; fi
 
-# ------------
+override_dh_auto_configure-modules: override_dh_prep-base-deb-files
+	sed -e 's/##KVERS##/$(KVERS)/g ; s/#KVERS#/$(KVERS)/g ; s/_KVERS_/$(KVERS)/g ; s/##KDREV##/$(KDREV)/g ; s/#KDREV#/$(KDREV)/g ; s/_KDREV_/$(KDREV)/g ; s/_ARCH_/$(DEB_HOST_ARCH)/g ; s/_IMGVER_/$(KIMGVER)/g' \
+	< debian/control.modules.in >> debian/control
 
-override_dh_binary-modules-udeb:
-	dh_testdir
-	dh_testroot
-	dh_prep
+	@# Embed the downstream version in the module.
+	sed \
+	  -e 's/^Version:.*/Version:      $(VERSION)/' \
+	  -e 's/^Release:.*/Release:      $(REVISION)/' \
+	  -i.orig META
+	touch .nogitrelease
 
-	$(MAKE) -C $(CURDIR)/module modules
+	@# Create the makefiles and configure script.
+	./autogen.sh
 
-	dh_installdirs -p${pmodules}-di
-	dh_install -p${pmodules}-di
-	dh_gencontrol -p${pmodules}-di
+	@# Build the userland
+	dh_auto_configure -- \
+	  --with-config=kernel \
+	  --prefix=/usr \
+	  --with-linux=$(KSRC) \
+	  --with-linux-obj=$(KOBJ)
 
-	dh_builddeb -p${pmodules}-di
-
-override_dh_binary-modules:
+override_dh_binary-modules: override_dh_auto_configure-modules
 	dh_testdir
 	dh_testroot
 	dh_prep

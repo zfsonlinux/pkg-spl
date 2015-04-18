@@ -1,3 +1,11 @@
+spl-linux (0.6.4-1-2-wheezy) wheezy; urgency=low
+
+  * Remove udeb build process.
+    Debian GNU/Linux isn't allowed to distribute binary modules.
+  * Find KVERS and KARCH correctly.
+
+ -- Turbo Fredriksson <turbo@debian.org>  Sat, 18 Apr 2015 11:22:33 +0200
+
 spl-linux (0.6.4-1-wheezy) wheezy; urgency=low
 
   * New upstream release.
