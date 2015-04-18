@@ -11,18 +11,39 @@ Build-Depends: autotools-dev,
                automake,
                debhelper (>= 9),
                dkms (>> 2.1.1.2-5),
-               libtool,
-               ##MODULES_BUILD_DEPENDS##
+               libtool
 Standards-Version: 3.9.4
 Homepage: http://www.zfsonlinux.org/
 Vcs-Git: git://anonscm.debian.org/pkg-zfsonlinux/spl.git
 Vcs-Browser: http://anonscm.debian.org/gitweb/?p=pkg-zfsonlinux/spl.git
 
+Package: spl-modules-source
+Section: kernel
+Priority: extra
+Architecture: all
+Depends: ${misc:Depends}, debhelper (>= 8),
+ module-assistant | kernel-package, perl
+Recommends: spl (>= ${source:Version})
+Description: Solaris Porting Layer kernel module source for Linux
+ The Solaris Porting Layer (SPL) is a Linux kernel module which provides
+ many of the Solaris kernel APIs. This shim layer makes it possible to
+ run Solaris kernel code in the Linux kernel with relatively minimal
+ modification. The Solaris Porting LAyer Tests (SPLAT) is a Linux kernel
+ module which provides a testing harness for the SPL module.
+ .
+ SPL can be particularly useful when you want to track upstream Illumos
+ (or any other OpenSolaris fork) development closely and don't want the
+ overhead of maintaining a large patch which converts Solaris primitives
+ to Linux primitives.
+ .
+ This package provides the source to the SPL kernel module in a form
+ suitable for use by module-assistant or kernel-package.
+
 Package: spl-dkms
 Architecture: all
 Depends: linux-headers-amd64, libc6-dev, ${misc:Depends}, dkms (>> 2.1.1.2-5), lsb-release, file
 Recommends: spl (>= ${source:Upstream-Version})
-Provides: spl-modules
+Provides: spl-modules, spl-modules-source
 Description: Solaris Porting Layer kernel modules for Linux
  The Solaris Porting Layer (SPL) is a Linux kernel module which provides
  many of the Solaris kernel APIs. This shim layer makes it possible to
@@ -43,7 +64,9 @@ Description: Solaris Porting Layer kernel modules for Linux
 Package: spl
 Architecture: linux-any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Recommends: spl-modules | spl-dkms
+Recommends: spl-modules (>= ${source:Version})
+ | spl-dkms (>= ${source:Version})
+ | spl-modules-source (>= ${source:Version})
 Description: Solaris Porting Layer user-space utilities for Linux
  The Solaris Porting Layer (SPL) is a Linux kernel module which provides
  many of the Solaris kernel APIs. This shim layer makes it possible to
