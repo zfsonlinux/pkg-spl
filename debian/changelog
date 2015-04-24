@@ -1,3 +1,10 @@
+spl-linux (0.6.4.1-1~vivid) vivid; urgency=low
+
+  [ Brian Behlendorf ]
+  * Tag spl-0.6.4.1
+
+ -- Darik Horn <dajhorn@vanadac.com>  Fri, 24 Apr 2015 16:26:17 -0500
+
 spl-linux (0.6.4-2~vivid) vivid; urgency=low
 
   [ Tim Chase ]
