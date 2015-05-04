@@ -19,7 +19,15 @@ POST_INSTALL="cp
   ${dkms_tree}/${PACKAGE_NAME}/${PACKAGE_VERSION}/build/module/Module.symvers
   ${dkms_tree}/${PACKAGE_NAME}/${PACKAGE_VERSION}/${kernelver}/${arch}/
 "
-REMAKE_INITRD="no"
+REMAKE_INITRD="$(
+  if [ -e /usr/share/initramfs-tools/hooks/zfs \
+       -o -e /usr/share/dracut/modules.d/90zfs ]
+  then
+    echo -n yes
+  else
+    echo -n no
+  fi
+)"
 MAKE[0]="make"
 BUILT_MODULE_NAME[0]="spl"
 BUILT_MODULE_LOCATION[0]="module/spl/"
