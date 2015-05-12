@@ -1,4 +1,10 @@
-spl-linux (0.6.4-1b) wheezy; urgency=low
+spl-linux (0.6.4-2-62e2eb) jessie; urgency=low
+
+  * New upstream GIT version.
+
+ -- Turbo Fredriksson <turbo@debian.org>  Tue, 12 May 2015 14:18:13 +0200
+
+spl-linux (0.6.4-1b) jessie; urgency=low
 
   * Update the spl-dkms dkms config file to make sure it rebuilds the initrd
     if needed.
