@@ -1,3 +1,11 @@
+spl-linux (0.6.4-1b-wheezy) wheezy; urgency=low
+
+  * Update the spl-dkms dkms config file to make sure it rebuilds the initrd
+    if needed.
+    Thanx to bisector for both finding and fixing this.
+
+ -- Turbo Fredriksson <turbo@debian.org>  Mon, 04 May 2015 12:12:30 +0200
+
 spl-linux (0.6.4-1-wheezy) wheezy; urgency=low
 
   * New upstream release.
