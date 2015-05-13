@@ -89,7 +89,7 @@ override_dh_auto_install:
 	@#     * It deletes from inside AC_CONFIG_FILES([]) everything except:
 	@#        (Makefile$|include/|module/|*.release$)
 	@#  * Takes care of spaces and tabs
-	awk '/^AC_CONFIG_FILES\(\[/,/^\]\)/ { if ($$0 !~ /^(AC_CONFIG_FILES\(\[([ \t]+)?$$|\]\)([ \t]+)?$$|([ \t]+)?(include\/|module\/|Makefile([ \t]+)?$$|zfs\.release([ \t]+)?$$))/){next} } {print}' \
+	awk '/^AC_CONFIG_FILES\(\[/,/^\]\)/ { if ($$0 !~ /^(AC_CONFIG_FILES\(\[([ \t]+)?$$|\]\)([ \t]+)?$$|([ \t]+)?(include\/|module\/|Makefile([ \t]+)?$$|spl\.release([ \t]+)?$$))/){next} } {print}' \
 		'$(CURDIR)/$(NAME)-$(VERSION)/configure.ac' > '$(CURDIR)/debian/tmp/usr/src/$(NAME)-$(VERSION)/configure.ac'
 	@# Set "SUBDIRS = module include" for CONFIG_KERNEL and remove SUBDIRS for all other configs.
 	sed '1,/CONFIG_KERNEL/s/SUBDIRS.*=.*//g;s/SUBDIRS.*=.*/SUBDIRS = module include/g;' \
@@ -100,7 +100,7 @@ override_dh_auto_install:
 	cd '$(CURDIR)/debian/tmp/usr/src/$(NAME)-$(VERSION)'; ./autogen.sh
 	rm -fr '$(CURDIR)/debian/tmp/usr/src/$(NAME)-$(VERSION)/autom4te.cache'
 
-	@# This shunt allows DKMS to install the Module.symvers and zfs_config.h
+	@# This shunt allows DKMS to install the Module.symvers and spl_config.h
 	@# files to the ${dkms_tree} area through the POST_INSTALL directive.
 	echo '#!/bin/sh'  >'$(CURDIR)/debian/tmp/usr/src/$(NAME)-$(VERSION)/cp'
 	echo 'cp "$$@"'  >>'$(CURDIR)/debian/tmp/usr/src/$(NAME)-$(VERSION)/cp'
