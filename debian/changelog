@@ -1,3 +1,9 @@
+spl-linux (0.6.4-4-234536) jessie; urgency=low
+
+  * New upstream GIT version.
+
+ -- Turbo Fredriksson <turbo@debian.org>  Thu, 11 Jun 2015 20:38:58 +0200
+
 spl-linux (0.6.4-3-a876b0) jessie; urgency=low
 
   * New upstream GIT version.
