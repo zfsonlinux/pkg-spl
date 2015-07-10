@@ -1,3 +1,13 @@
+spl-linux (0.6.4.2-1~trusty) trusty; urgency=low
+
+  [ Brian Behlendorf ]
+  * Tag spl-0.6.4.1
+
+  [ Ned Bass ]
+  * Tag spl-0.6.4.2 (detached)
+
+ -- Darik Horn <dajhorn@vanadac.com>  Thu, 09 Jul 2015 22:11:19 -0400
+
 spl-linux (0.6.4-1~trusty) trusty; urgency=low
 
   [ Tim Chase ]
