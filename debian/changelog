@@ -1,3 +1,37 @@
+spl-linux (0.6.4.2-2~vivid~1.gbp167210) vivid; urgency=low
+
+  ** SNAPSHOT build @1672101913bc00ddc353006a3616e2c36de82643 **
+
+  [ Richard Yao ]
+  * vn_getf/vn_releasef should not accept negative file descriptors
+  * Implement areleasef()
+
+  [ Chunwei Chen ]
+  * Make tsd_set(key, NULL) remove the tsd entry for current thread
+
+  [ Brian Behlendorf ]
+  * Fix cstyle issues in spl-tsd.c
+  * Add boot_ncpus macro
+
+  [ Chris Dunlop ]
+  * Make taskq_wait() block until the queue is empty
+
+  [ Brian Behlendorf ]
+  * Retire rwsem_is_locked() compat
+  * Rename cv_wait_interruptible() to cv_wait_sig()
+  * Add IMPLY() and EQUIV() macros
+  * Add TASKQ_DYNAMIC feature
+  * Set TASKQ_DYNAMIC for kmem and system taskqs
+  * Add memory compatibility wrappers
+
+  [ Turbo Fredriksson ]
+  * Support parallel build trees (VPATH builds)
+
+  [ Darik Horn ]
+  * Update debian/gbp.conf for snapshot builds.
+
+ -- Darik Horn <dajhorn@vanadac.com>  Sun, 19 Jul 2015 23:53:30 -0400
+
 spl-linux (0.6.4.2-1~vivid) vivid; urgency=low
 
   [ Ned Bass ]
