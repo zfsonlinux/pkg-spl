@@ -1,3 +1,9 @@
+spl-linux (0.6.4-7-4699d7-wheezy) wheezy; urgency=low
+
+  * New upstream GIT version.
+
+ -- Turbo Fredriksson <turbo@debian.org>  Mon, 27 Jul 2015 17:56:48 +0200
+
 spl-linux (0.6.4-6-37d7cd-wheezy) wheezy; urgency=low
 
   * New upstream GIT version.
