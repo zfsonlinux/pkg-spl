@@ -1,3 +1,10 @@
+spl-linux (0.6.4.2-1~precise) precise; urgency=low
+
+  [ Ned Bass ]
+  * Tag spl-0.6.4.2
+
+ -- Darik Horn <dajhorn@vanadac.com>  Thu, 30 Jul 2015 21:49:36 -0400
+
 spl-linux (0.6.4.1-1~precise) precise; urgency=low
 
   [ Brian Behlendorf ]
