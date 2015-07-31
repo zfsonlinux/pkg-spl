@@ -1,3 +1,16 @@
+spl-linux (0.6.4.2-2~vivid~2.gbpe16dd2) vivid; urgency=low
+
+  ** SNAPSHOT build @e16dd28e0e2535a793b1567efb4a5017022c5f1e **
+
+  [ Brian Behlendorf ]
+  * Default to --disable-debug-kmem
+  * Add defclsyspri macro
+  * Remove skc_ref from alloc/free paths
+  * Invert minclsyspri and maxclsyspri
+  * Remove needfree, desfree, lotsfree #defines
+
+ -- Darik Horn <dajhorn@vanadac.com>  Thu, 30 Jul 2015 21:13:59 -0400
+
 spl-linux (0.6.4.2-2~vivid~1.gbp167210) vivid; urgency=low
 
   ** SNAPSHOT build @1672101913bc00ddc353006a3616e2c36de82643 **
