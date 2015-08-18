@@ -1,9 +1,10 @@
-spl-linux (0.6.4-8-??????) jessie; urgency=low
+spl-linux (0.6.4-8-8ac6ff) jessie; urgency=low
 
   * Package zfs-modules-source needs to conflict and replace zfs-dkms
     and vise versa.
+  * New upstream GIT version.
 
- -- Turbo Fredriksson <turbo@debian.org>
+ -- Turbo Fredriksson <turbo@debian.org>  Tue, 18 Aug 2015 12:29:48 +0200
 
 spl-linux (0.6.4-7-4699d7) jessie; urgency=low
 
