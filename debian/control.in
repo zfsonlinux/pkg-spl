@@ -23,6 +23,8 @@ Priority: extra
 Architecture: all
 Depends: ${misc:Depends}, debhelper (>= 8),
  module-assistant | kernel-package, perl
+Conflicts: spl-dkms
+Replaces: spl-dkms
 Description: Native ZFS filesystem kernel modules for Linux
  The Solaris Porting Layer (SPL) is a Linux kernel module which provides
  many of the Solaris kernel APIs. This shim layer makes it possible to
@@ -38,6 +40,8 @@ Architecture: all
 Depends: linux-headers-amd64, libc6-dev, ${misc:Depends}, dkms (>> 2.1.1.2-5), lsb-release, file
 Recommends: spl (>= ${source:Upstream-Version})
 Provides: spl-modules
+Conflicts: spl-modules-source
+Replaces: spl-modules-source
 Description: Solaris Porting Layer kernel modules for Linux
  The Solaris Porting Layer (SPL) is a Linux kernel module which provides
  many of the Solaris kernel APIs. This shim layer makes it possible to

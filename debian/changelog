@@ -1,3 +1,11 @@
+spl-linux (0.6.4-8-8ac6ff-wheezy) wheezy; urgency=low
+
+  * Package zfs-modules-source needs to conflict and replace zfs-dkms
+    and vise versa.
+  * New upstream GIT version.
+
+ -- Turbo Fredriksson <turbo@debian.org>  Tue, 18 Aug 2015 12:15:00 +0200
+
 spl-linux (0.6.4-7-4699d7-wheezy) wheezy; urgency=low
 
   * New upstream GIT version.
