@@ -12,7 +12,7 @@ Index: b/module/spl/spl-generic.c
 ===================================================================
 --- a/module/spl/spl-generic.c
 +++ b/module/spl/spl-generic.c
-@@ -471,8 +471,12 @@
+@@ -416,8 +416,12 @@
  
  	file = kobj_open_file(spl_hostid_path);
  
