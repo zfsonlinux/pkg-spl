@@ -1,3 +1,33 @@
+spl-linux (0.6.4.2-2~vivid~3.gbp89ffa2) vivid; urgency=low
+
+  ** SNAPSHOT build @89ffa2dd17118e2d7029cdc88b4ee3b27b627364 **
+
+  [ Tim Chase ]
+  * Include other sources of freeable memory in the freemem calculation
+
+  [ Brian Behlendorf ]
+  * Linux 4.2 compat: vfs_rename()
+
+  [ Chunwei Chen ]
+  * Restructure uio to accommodate bio_vec
+
+  [ Tim Chase ]
+  * Create a new thread during recursive taskq dispatch if necessary
+
+  [ Brian Behlendorf ]
+  * Revert "Create a new thread during recursive taskq dispatch if necessary"
+
+  [ Tim Chase ]
+  * Create a new thread during recursive taskq dispatch if necessary
+
+  [ Brian Behlendorf ]
+  * Linux 4.2 compat: misc_deregister()
+
+  [ Darik Horn ]
+  * Refresh debian/patches after upstream merge.
+
+ -- Darik Horn <dajhorn@vanadac.com>  Mon, 07 Sep 2015 23:12:45 -0400
+
 spl-linux (0.6.4.2-2~vivid~2.gbpe16dd2) vivid; urgency=low
 
   ** SNAPSHOT build @e16dd28e0e2535a793b1567efb4a5017022c5f1e **
