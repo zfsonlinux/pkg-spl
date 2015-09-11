@@ -1,3 +1,66 @@
+spl-linux (0.6.5-1~trusty) trusty; urgency=low
+
+  [ Richard Yao ]
+  * vn_getf/vn_releasef should not accept negative file descriptors
+  * Implement areleasef()
+
+  [ Chunwei Chen ]
+  * Make tsd_set(key, NULL) remove the tsd entry for current thread
+
+  [ Brian Behlendorf ]
+  * Fix cstyle issues in spl-tsd.c
+  * Add boot_ncpus macro
+
+  [ Chris Dunlop ]
+  * Make taskq_wait() block until the queue is empty
+
+  [ Brian Behlendorf ]
+  * Retire rwsem_is_locked() compat
+  * Rename cv_wait_interruptible() to cv_wait_sig()
+  * Add IMPLY() and EQUIV() macros
+  * Add TASKQ_DYNAMIC feature
+  * Set TASKQ_DYNAMIC for kmem and system taskqs
+  * Add memory compatibility wrappers
+
+  [ Turbo Fredriksson ]
+  * Support parallel build trees (VPATH builds)
+
+  [ Brian Behlendorf ]
+  * Default to --disable-debug-kmem
+  * Add defclsyspri macro
+  * Remove skc_ref from alloc/free paths
+  * Invert minclsyspri and maxclsyspri
+  * Remove needfree, desfree, lotsfree #defines
+
+  [ Tim Chase ]
+  * Include other sources of freeable memory in the freemem calculation
+
+  [ Brian Behlendorf ]
+  * Linux 4.2 compat: vfs_rename()
+
+  [ Chunwei Chen ]
+  * Restructure uio to accommodate bio_vec
+
+  [ Tim Chase ]
+  * Create a new thread during recursive taskq dispatch if necessary
+
+  [ Brian Behlendorf ]
+  * Revert "Create a new thread during recursive taskq dispatch if necessary"
+
+  [ Tim Chase ]
+  * Create a new thread during recursive taskq dispatch if necessary
+
+  [ Brian Behlendorf ]
+  * Linux 4.2 compat: misc_deregister()
+
+  [ Richard Yao ]
+  * Disable direct reclaim in taskq worker threads on Linux 3.9+
+
+  [ Brian Behlendorf ]
+  * Tag spl-0.6.5
+
+ -- Darik Horn <dajhorn@vanadac.com>  Fri, 11 Sep 2015 18:33:31 -0400
+
 spl-linux (0.6.4.2-1~trusty) trusty; urgency=low
 
   [ Brian Behlendorf ]
