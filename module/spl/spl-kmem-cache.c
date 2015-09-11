@@ -1403,8 +1403,6 @@ spl_kmem_cache_alloc(spl_kmem_cache_t *skc, int flags)
 	ASSERT(skc->skc_magic == SKC_MAGIC);
 	ASSERT(!test_bit(KMC_BIT_DESTROY, &skc->skc_flags));
 
-	atomic_inc(&skc->skc_ref);
-
 	/*
 	 * Allocate directly from a Linux slab.  All optimizations are left
 	 * to the underlying cache we only need to guarantee that KM_SLEEP
@@ -1457,8 +1455,6 @@ ret:
 			prefetchw(obj);
 	}
 
-	atomic_dec(&skc->skc_ref);
-
 	return (obj);
 }
 EXPORT_SYMBOL(spl_kmem_cache_alloc);
@@ -1479,7 +1475,6 @@ spl_kmem_cache_free(spl_kmem_cache_t *skc, void *obj)
 
 	ASSERT(skc->skc_magic == SKC_MAGIC);
 	ASSERT(!test_bit(KMC_BIT_DESTROY, &skc->skc_flags));
-	atomic_inc(&skc->skc_ref);
 
 	/*
 	 * Run the destructor
@@ -1492,7 +1487,7 @@ spl_kmem_cache_free(spl_kmem_cache_t *skc, void *obj)
 	 */
 	if (skc->skc_flags & KMC_SLAB) {
 		kmem_cache_free(skc->skc_linux_cache, obj);
-		goto out;
+		return;
 	}
 
 	/*
@@ -1507,7 +1502,7 @@ spl_kmem_cache_free(spl_kmem_cache_t *skc, void *obj)
 		spin_unlock(&skc->skc_lock);
 
 		if (do_emergency && (spl_emergency_free(skc, obj) == 0))
-			goto out;
+			return;
 	}
 
 	local_irq_save(flags);
@@ -1538,8 +1533,6 @@ spl_kmem_cache_free(spl_kmem_cache_t *skc, void *obj)
 
 	if (do_reclaim)
 		spl_slab_reclaim(skc);
-out:
-	atomic_dec(&skc->skc_ref);
 }
 EXPORT_SYMBOL(spl_kmem_cache_free);
 
@@ -1725,7 +1718,9 @@ spl_kmem_cache_init(void)
 	init_rwsem(&spl_kmem_cache_sem);
 	INIT_LIST_HEAD(&spl_kmem_cache_list);
 	spl_kmem_cache_taskq = taskq_create("spl_kmem_cache",
-	    spl_kmem_cache_kmem_threads, maxclsyspri, 1, 32, TASKQ_PREPOPULATE);
+	    spl_kmem_cache_kmem_threads, maxclsyspri,
+	    spl_kmem_cache_kmem_threads * 8, INT_MAX,
+	    TASKQ_PREPOPULATE | TASKQ_DYNAMIC);
 	spl_register_shrinker(&spl_kmem_cache_shrinker);
 
 	return (0);
