@@ -1,3 +1,16 @@
+spl-linux (0.6.5.2-1~trusty) trusty; urgency=low
+
+  [ Brian Behlendorf ]
+  * Fix PAX Patch/Grsec SLAB_USERCOPY panic
+
+  [ Nathaniel Clark ]
+  * Always remove during spl-dkms uninstall/update
+
+  [ Ned Bass ]
+  * Prepare to tag spl-0.6.5.2
+
+ -- Darik Horn <dajhorn@vanadac.com>  Wed, 30 Sep 2015 14:01:51 -0400
+
 spl-linux (0.6.5.1-1~trusty) trusty; urgency=low
 
   [ Ned Bass ]
