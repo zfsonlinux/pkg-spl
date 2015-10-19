@@ -1,3 +1,14 @@
+spl-linux (0.6.5.3-1~precise) precise; urgency=low
+
+  [ Brian Behlendorf ]
+  * Fix CPU hotplug
+  * Set spl_taskq_thread_dynamic=0 by default
+
+  [ Ned Bass ]
+  * Prepare to tag spl-0.6.5.3
+
+ -- Darik Horn <dajhorn@vanadac.com>  Mon, 19 Oct 2015 19:16:40 -0400
+
 spl-linux (0.6.5.2-1~precise) precise; urgency=low
 
   [ Brian Behlendorf ]
