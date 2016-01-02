@@ -36,7 +36,6 @@ extern vmem_t *zio_alloc_arena;
 extern vmem_t *zio_arena;
 
 extern size_t vmem_size(vmem_t *vmp, int typemask);
-extern void *spl_vmalloc(unsigned long size, gfp_t lflags, pgprot_t prot);
 
 /*
  * Memory allocation interfaces
@@ -98,6 +97,7 @@ extern void *spl_vmalloc(unsigned long size, gfp_t lflags, pgprot_t prot);
 #define	vmem_alloc(sz, fl)	spl_vmem_alloc((sz), (fl), __func__, __LINE__)
 #define	vmem_zalloc(sz, fl)	spl_vmem_zalloc((sz), (fl), __func__, __LINE__)
 #define	vmem_free(ptr, sz)	spl_vmem_free((ptr), (sz))
+#define	vmem_qcache_reap(ptr)	((void)0)
 
 extern void *spl_vmem_alloc(size_t sz, int fl, const char *func, int line);
 extern void *spl_vmem_zalloc(size_t sz, int fl, const char *func, int line);

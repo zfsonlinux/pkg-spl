@@ -78,6 +78,7 @@
 #define proc_pageout			NULL
 #define curproc				current
 #define max_ncpus			num_possible_cpus()
+#define boot_ncpus			num_online_cpus()
 #define CPU_SEQID			smp_processor_id()
 #define _NOTE(x)
 #define is_system_labeled()		0
@@ -92,8 +93,9 @@
  *
  * Treat shim tasks as SCHED_NORMAL tasks
  */
-#define minclsyspri			(MAX_RT_PRIO)
-#define maxclsyspri			(MAX_PRIO-1)
+#define minclsyspri			(MAX_PRIO-1)
+#define maxclsyspri			(MAX_RT_PRIO)
+#define defclsyspri			(DEFAULT_PRIO)
 
 #ifndef NICE_TO_PRIO
 #define NICE_TO_PRIO(nice)		(MAX_RT_PRIO + (nice) + 20)
@@ -184,7 +186,7 @@ extern void spl_cleanup(void);
  */
 #define P2ALIGN(x, align)	((x) & -(align))
 #define P2CROSS(x, y, align)	(((x) ^ (y)) > (align) - 1)
-#define P2ROUNDUP(x, align)	(-(-(x) & -(align)))
+#define P2ROUNDUP(x, align)	((((x) - 1) | ((align) - 1)) + 1)
 #define P2PHASE(x, align)	((x) & ((align) - 1))
 #define P2NPHASE(x, align)	(-(x) & ((align) - 1))
 #define ISP2(x)			(((x) & ((x) - 1)) == 0)
@@ -211,7 +213,7 @@ extern void spl_cleanup(void);
 #define P2NPHASE_TYPED(x, align, type)  \
         (-(type)(x) & ((type)(align) - 1))
 #define P2ROUNDUP_TYPED(x, align, type) \
-        (-(-(type)(x) & -(type)(align)))
+        ((((type)(x) - 1) | ((type)(align) - 1)) + 1)
 #define P2END_TYPED(x, align, type)     \
         (-(~(type)(x) & -(type)(align)))
 #define P2PHASEUP_TYPED(x, align, phase, type)  \
