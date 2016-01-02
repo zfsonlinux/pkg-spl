@@ -31,6 +31,7 @@
 #include <linux/swap.h>
 #include <linux/mm_compat.h>
 #include <linux/wait_compat.h>
+#include <linux/prefetch.h>
 
 /*
  * Within the scope of spl-kmem.c file the kmem_cache_* definitions
@@ -200,7 +201,7 @@ kv_alloc(spl_kmem_cache_t *skc, int size, int flags)
 		ASSERT(ISP2(size));
 		ptr = (void *)__get_free_pages(lflags, get_order(size));
 	} else {
-		ptr = spl_vmalloc(size, lflags | __GFP_HIGHMEM, PAGE_KERNEL);
+		ptr = __vmalloc(size, lflags | __GFP_HIGHMEM, PAGE_KERNEL);
 	}
 
 	/* Resulting allocated memory will be page aligned */
@@ -805,15 +806,18 @@ spl_magazine_create(spl_kmem_cache_t *skc)
 	if (skc->skc_flags & KMC_NOMAGAZINE)
 		return (0);
 
+	skc->skc_mag = kzalloc(sizeof (spl_kmem_magazine_t *) *
+	    num_possible_cpus(), kmem_flags_convert(KM_SLEEP));
 	skc->skc_mag_size = spl_magazine_size(skc);
 	skc->skc_mag_refill = (skc->skc_mag_size + 1) / 2;
 
-	for_each_online_cpu(i) {
+	for_each_possible_cpu(i) {
 		skc->skc_mag[i] = spl_magazine_alloc(skc, i);
 		if (!skc->skc_mag[i]) {
 			for (i--; i >= 0; i--)
 				spl_magazine_free(skc->skc_mag[i]);
 
+			kfree(skc->skc_mag);
 			return (-ENOMEM);
 		}
 	}
@@ -833,11 +837,13 @@ spl_magazine_destroy(spl_kmem_cache_t *skc)
 	if (skc->skc_flags & KMC_NOMAGAZINE)
 		return;
 
-	for_each_online_cpu(i) {
+	for_each_possible_cpu(i) {
 		skm = skc->skc_mag[i];
 		spl_cache_flush(skc, skm, skm->skm_avail);
 		spl_magazine_free(skm);
 	}
+
+	kfree(skc->skc_mag);
 }
 
 /*
@@ -880,12 +886,6 @@ spl_kmem_cache_create(char *name, size_t size, size_t align,
 
 	might_sleep();
 
-	/*
-	 * Allocate memory for a new cache and initialize it.  Unfortunately,
-	 * this usually ends up being a large allocation of ~32k because
-	 * we need to allocate enough memory for the worst case number of
-	 * cpus in the magazine, skc_mag[NR_CPUS].
-	 */
 	skc = kzalloc(sizeof (*skc), lflags);
 	if (skc == NULL)
 		return (NULL);
@@ -986,13 +986,23 @@ spl_kmem_cache_create(char *name, size_t size, size_t align,
 		if (rc)
 			goto out;
 	} else {
+		unsigned long slabflags = 0;
+
 		if (size > (SPL_MAX_KMEM_ORDER_NR_PAGES * PAGE_SIZE)) {
 			rc = EINVAL;
 			goto out;
 		}
 
+#if defined(SLAB_USERCOPY)
+		/*
+		 * Required for PAX-enabled kernels if the slab is to be
+		 * used for coping between user and kernel space.
+		 */
+		slabflags |= SLAB_USERCOPY;
+#endif
+
 		skc->skc_linux_cache = kmem_cache_create(
-		    skc->skc_name, size, align, 0, NULL);
+		    skc->skc_name, size, align, slabflags, NULL);
 		if (skc->skc_linux_cache == NULL) {
 			rc = ENOMEM;
 			goto out;
@@ -1146,15 +1156,10 @@ spl_cache_grow_work(void *data)
 	spl_kmem_cache_t *skc = ska->ska_cache;
 	spl_kmem_slab_t *sks;
 
-#if defined(PF_MEMALLOC_NOIO)
-	unsigned noio_flag = memalloc_noio_save();
-	sks = spl_slab_alloc(skc, ska->ska_flags);
-	memalloc_noio_restore(noio_flag);
-#else
 	fstrans_cookie_t cookie = spl_fstrans_mark();
 	sks = spl_slab_alloc(skc, ska->ska_flags);
 	spl_fstrans_unmark(cookie);
-#endif
+
 	spin_lock(&skc->skc_lock);
 	if (sks) {
 		skc->skc_slab_total++;
