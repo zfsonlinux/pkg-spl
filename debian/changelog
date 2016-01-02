@@ -1,3 +1,58 @@
+spl-linux (0.6.5.3-2~wily~1.gbp951ce8) wily; urgency=low
+
+  ** SNAPSHOT build @951ce88c1355b51a79d177c751575dc3aec10a86 **
+
+  [ Richard Yao ]
+  * Disable direct reclaim in taskq worker threads on Linux 3.9+
+
+  [ Ned Bass ]
+  * Tag spl-0.6.5.1
+
+  [ Brian Behlendorf ]
+  * Tag spl-0.6.5
+
+  [ Brian Behlendorf ]
+  * Fix PAX Patch/Grsec SLAB_USERCOPY panic
+
+  [ Nathaniel Clark ]
+  * Always remove during spl-dkms uninstall/update
+
+  [ Ned Bass ]
+  * Prepare to tag spl-0.6.5.2
+
+  [ Brian Behlendorf ]
+  * Fix CPU hotplug
+  * Set spl_taskq_thread_dynamic=0 by default
+
+  [ Ned Bass ]
+  * Prepare to tag spl-0.6.5.3
+
+  [ Jason Zaman ]
+  * sysmacros: Make P2ROUNDUP not trigger int overflow
+
+  [ Brian Behlendorf ]
+  * Fix --enable-linux-builtin
+
+  [ Dimitri John Ledkov ]
+  * spl-kmem-cache: include linux/prefetch.h for prefetchw()
+
+  [ tuxoko ]
+  * Prevent rm modules.* when make install
+
+  [ Brian Behlendorf ]
+  * Either _ILP32 or _LP64 must be defined
+
+  [ zgock ]
+  * Fix build issue on some configured kernels
+
+  [ Kamil Domanski ]
+  * Skip GPL-only symbols test when cross-compiling
+
+  [ Chunwei Chen ]
+  * Use spl_fstrans_mark instead of memalloc_noio_save
+
+ -- Darik Horn <dajhorn@vanadac.com>  Sat, 02 Jan 2016 18:47:37 -0500
+
 spl-linux (0.6.4.2-2~wily~3.gbp3e8fbe) wily; urgency=low
 
   ** SNAPSHOT build @3e8fbe01b7f2e44b7dbb0f182b5a91cd2477292c **
