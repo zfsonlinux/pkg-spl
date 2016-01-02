@@ -60,7 +60,7 @@
 #endif
 
 /* powerpc (ppc64) arch specific defines */
-#elif defined(__powerpc) || defined(__powerpc__)
+#elif defined(__powerpc) || defined(__powerpc__) || defined(__powerpc64__)
 
 #if !defined(__powerpc)
 #define __powerpc
@@ -70,12 +70,18 @@
 #define __powerpc__
 #endif
 
+#if defined(__powerpc64__)
 #if !defined(_LP64)
 #define _LP64
 #endif
+#else
+#if !defined(_ILP32)
+#define _ILP32
+#endif
+#endif
 
 /* arm arch specific defines */
-#elif defined(__arm) || defined(__arm__)
+#elif defined(__arm) || defined(__arm__) || defined(__aarch64__)
 
 #if !defined(__arm)
 #define __arm
@@ -85,18 +91,60 @@
 #define __arm__
 #endif
 
-#if defined(__ARMEL__)
+#if defined(__aarch64__)
+#if !defined(_LP64)
+#define _LP64
+#endif
+#else
+#if !defined(_ILP32)
+#define _ILP32
+#endif
+#endif
+
+#if defined(__ARMEL__) || defined(__AARCH64EL__)
 #define _LITTLE_ENDIAN
 #else
 #define _BIG_ENDIAN
 #endif
 
-#else /* Currently only x86_64, i386, arm, and powerpc arches supported */
+/* sparc arch specific defines */
+#elif defined(__sparc) || defined(__sparc__)
+
+#if !defined(__sparc)
+#define __sparc
+#endif
+
+#if !defined(__sparc__)
+#define __sparc__
+#endif
+
+#if !defined(_ILP32)
+#define _ILP32
+#endif
+
+#if defined(__arch64__)
+#if !defined(_LP64)
+#define _LP64
+#endif
+#else
+#if !defined(_ILP32)
+#define _ILP32
+#endif
+#endif
+
+#define _BIG_ENDIAN
+#define _SUNOS_VTOC_16
+
+#else /* Currently x86_64, i386, arm, powerpc, and sparc are supported */
 #error "Unsupported ISA type"
 #endif
 
 #if defined(_ILP32) && defined(_LP64)
 #error "Both _ILP32 and _LP64 are defined"
+#endif
+
+#if !defined(_ILP32) && !defined(_LP64)
+#error "Neither _ILP32 or _LP64 are defined"
 #endif
 
 #include <sys/byteorder.h>

@@ -57,7 +57,7 @@ AC_DEFUN([SPL_AC_META], [
 
 		SPL_META_RELEASE=_SPL_AC_META_GETVAL([Release]);
 		if test ! -f ".nogitrelease" && git rev-parse --git-dir > /dev/null 2>&1; then
-			_match="${SPL_META_NAME}-${SPL_META_VERSION}*"
+			_match="${SPL_META_NAME}-${SPL_META_VERSION}"
 			_alias=$(git describe --match=${_match} 2>/dev/null)
 			_release=$(echo ${_alias}|cut -f3- -d'-'|sed 's/-/_/g')
 			if test -n "${_release}"; then
@@ -74,6 +74,14 @@ AC_DEFUN([SPL_AC_META], [
 
 			RELEASE="$SPL_META_RELEASE"
 			AC_SUBST([RELEASE])
+		fi
+
+		SPL_META_LICENSE=_SPL_AC_META_GETVAL([License]);
+		if test -n "$SPL_META_LICENSE"; then
+			AC_DEFINE_UNQUOTED([SPL_META_LICENSE], ["$SPL_META_LICENSE"],
+				[Define the project license.]
+			)
+			AC_SUBST([SPL_META_LICENSE])
 		fi
 
 		if test -n "$SPL_META_NAME" -a -n "$SPL_META_VERSION"; then

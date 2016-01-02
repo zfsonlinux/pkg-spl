@@ -29,6 +29,8 @@
 #include <sys/vmsystm.h>
 #include <sys/kobj.h>
 #include <sys/kmem.h>
+#include <sys/kmem_cache.h>
+#include <sys/vmem.h>
 #include <sys/mutex.h>
 #include <sys/rwlock.h>
 #include <sys/taskq.h>
@@ -37,68 +39,22 @@
 #include <sys/debug.h>
 #include <sys/proc.h>
 #include <sys/kstat.h>
-#include <sys/utsname.h>
 #include <sys/file.h>
+#include <linux/ctype.h>
 #include <linux/kmod.h>
+#include <linux/math64_compat.h>
 #include <linux/proc_compat.h>
-#include <spl-debug.h>
-
-#ifdef SS_DEBUG_SUBSYS
-#undef SS_DEBUG_SUBSYS
-#endif
-
-#define SS_DEBUG_SUBSYS SS_GENERIC
 
 char spl_version[32] = "SPL v" SPL_META_VERSION "-" SPL_META_RELEASE;
 EXPORT_SYMBOL(spl_version);
 
-unsigned long spl_hostid = HW_INVALID_HOSTID;
+unsigned long spl_hostid = 0;
 EXPORT_SYMBOL(spl_hostid);
 module_param(spl_hostid, ulong, 0644);
 MODULE_PARM_DESC(spl_hostid, "The system hostid.");
 
-char hw_serial[HW_HOSTID_LEN] = "<none>";
-EXPORT_SYMBOL(hw_serial);
-
 proc_t p0 = { 0 };
 EXPORT_SYMBOL(p0);
-
-#ifndef HAVE_KALLSYMS_LOOKUP_NAME
-DECLARE_WAIT_QUEUE_HEAD(spl_kallsyms_lookup_name_waitq);
-kallsyms_lookup_name_t spl_kallsyms_lookup_name_fn = SYMBOL_POISON;
-#endif
-
-int
-highbit(unsigned long i)
-{
-        register int h = 1;
-        SENTRY;
-
-        if (i == 0)
-                SRETURN(0);
-#if BITS_PER_LONG == 64
-        if (i & 0xffffffff00000000ul) {
-                h += 32; i >>= 32;
-        }
-#endif
-        if (i & 0xffff0000) {
-                h += 16; i >>= 16;
-        }
-        if (i & 0xff00) {
-                h += 8; i >>= 8;
-        }
-        if (i & 0xf0) {
-                h += 4; i >>= 4;
-        }
-        if (i & 0xc) {
-                h += 2; i >>= 2;
-        }
-        if (i & 0x2) {
-                h += 1;
-        }
-        SRETURN(h);
-}
-EXPORT_SYMBOL(highbit);
 
 #if BITS_PER_LONG == 32
 /*
@@ -411,17 +367,6 @@ __put_task_struct(struct task_struct *t)
 EXPORT_SYMBOL(__put_task_struct);
 #endif /* HAVE_PUT_TASK_STRUCT */
 
-struct new_utsname *__utsname(void)
-{
-#ifdef HAVE_INIT_UTSNAME
-	return init_utsname();
-#else
-	return &system_utsname;
-#endif
-}
-EXPORT_SYMBOL(__utsname);
-
-
 /*
  * Read the unique system identifier from the /etc/hostid file.
  *
@@ -467,7 +412,7 @@ hostid_read(void)
 	int result;
 	uint64_t size;
 	struct _buf *file;
-	unsigned long hostid = 0;
+	uint32_t hostid = 0;
 
 	file = kobj_open_file(spl_hostid_path);
 
@@ -511,45 +456,10 @@ hostid_read(void)
 	return 0;
 }
 
-#define GET_HOSTID_CMD \
-	"exec 0</dev/null " \
-	"     1>/proc/sys/kernel/spl/hostid " \
-	"     2>/dev/null; " \
-	"hostid"
-
-static int
-hostid_exec(void)
-{
-	char *argv[] = { "/bin/sh",
-	                 "-c",
-	                 GET_HOSTID_CMD,
-	                 NULL };
-	char *envp[] = { "HOME=/",
-	                 "TERM=linux",
-	                 "PATH=/sbin:/usr/sbin:/bin:/usr/bin",
-	                 NULL };
-	int rc;
-
-	/* Doing address resolution in the kernel is tricky and just
-	 * not a good idea in general.  So to set the proper 'hw_serial'
-	 * use the usermodehelper support to ask '/bin/sh' to run
-	 * '/usr/bin/hostid' and redirect the result to /proc/sys/spl/hostid
-	 * for us to use.  It's a horrific solution but it will do for now.
-	 */
-	rc = call_usermodehelper(argv[0], argv, envp, UMH_WAIT_PROC);
-	if (rc)
-		printk("SPL: Failed user helper '%s %s %s', rc = %d\n",
-		       argv[0], argv[1], argv[2], rc);
-
-	return rc;
-}
-
 uint32_t
 zone_get_hostid(void *zone)
 {
 	static int first = 1;
-	unsigned long hostid;
-	int rc;
 
 	/* Only the global zone is supported */
 	ASSERT(zone == NULL);
@@ -557,134 +467,93 @@ zone_get_hostid(void *zone)
 	if (first) {
 		first = 0;
 
+		spl_hostid &= HW_HOSTID_MASK;
 		/*
 		 * Get the hostid if it was not passed as a module parameter.
-		 * Try reading the /etc/hostid file directly, and then fall
-		 * back to calling the /usr/bin/hostid utility.
+		 * Try reading the /etc/hostid file directly.
 		 */
-		if ((spl_hostid == HW_INVALID_HOSTID) &&
-		    (rc = hostid_read()) && (rc = hostid_exec()))
-			return HW_INVALID_HOSTID;
+		if (spl_hostid == 0 && hostid_read())
+			spl_hostid = 0;
+
 
 		printk(KERN_NOTICE "SPL: using hostid 0x%08x\n",
 			(unsigned int) spl_hostid);
 	}
 
-	if (ddi_strtoul(hw_serial, NULL, HW_HOSTID_LEN-1, &hostid) != 0)
-		return HW_INVALID_HOSTID;
-
-	return (uint32_t)hostid;
+	return spl_hostid;
 }
 EXPORT_SYMBOL(zone_get_hostid);
 
-#ifndef HAVE_KALLSYMS_LOOKUP_NAME
-/*
- * The kallsyms_lookup_name() kernel function is not an exported symbol in
- * Linux 2.6.19 through 2.6.32 inclusive.
- *
- * This function replaces the functionality by performing an upcall to user
- * space where /proc/kallsyms is consulted for the requested address.
- *
- */
-
-#define GET_KALLSYMS_ADDR_CMD \
-	"exec 0</dev/null " \
-	"     1>/proc/sys/kernel/spl/kallsyms_lookup_name " \
-	"     2>/dev/null; " \
-	"awk  '{ if ( $3 == \"kallsyms_lookup_name\" ) { print $1 } }' " \
-	"     /proc/kallsyms "
-
 static int
-set_kallsyms_lookup_name(void)
-{
-	char *argv[] = { "/bin/sh",
-	                 "-c",
-			 GET_KALLSYMS_ADDR_CMD,
-	                 NULL };
-	char *envp[] = { "HOME=/",
-	                 "TERM=linux",
-	                 "PATH=/sbin:/usr/sbin:/bin:/usr/bin",
-	                 NULL };
-	int rc;
-
-	rc = call_usermodehelper(argv[0], argv, envp, UMH_WAIT_PROC);
-
-	/*
-	 * Due to I/O buffering the helper may return successfully before
-	 * the proc handler has a chance to execute.  To catch this case
-	 * wait up to 1 second to verify spl_kallsyms_lookup_name_fn was
-	 * updated to a non SYMBOL_POISON value.
-	 */
-	if (rc == 0) {
-		rc = wait_event_timeout(spl_kallsyms_lookup_name_waitq,
-		    spl_kallsyms_lookup_name_fn != SYMBOL_POISON, HZ);
-		if (rc == 0)
-			rc = -ETIMEDOUT;
-		else if (spl_kallsyms_lookup_name_fn == SYMBOL_POISON)
-			rc = -EFAULT;
-		else
-			rc = 0;
-	}
-
-	if (rc)
-		printk("SPL: Failed user helper '%s %s %s', rc = %d\n",
-		       argv[0], argv[1], argv[2], rc);
-
-	return rc;
-}
-#endif
-
-static int
-__init spl_init(void)
+spl_kvmem_init(void)
 {
 	int rc = 0;
 
-	if ((rc = spl_debug_init()))
-		return rc;
+	rc = spl_kmem_init();
+	if (rc)
+		goto out1;
 
-	if ((rc = spl_kmem_init()))
-		SGOTO(out1, rc);
+	rc = spl_vmem_init();
+	if (rc)
+		goto out2;
+
+	rc = spl_kmem_cache_init();
+	if (rc)
+		goto out3;
+
+	return (rc);
+out3:
+	spl_vmem_fini();
+out2:
+	spl_kmem_fini();
+out1:
+	return (rc);
+}
+
+static void
+spl_kvmem_fini(void)
+{
+	spl_kmem_cache_fini();
+	spl_vmem_fini();
+	spl_kmem_fini();
+}
+
+static int __init
+spl_init(void)
+{
+	int rc = 0;
+
+	if ((rc = spl_kvmem_init()))
+		goto out1;
 
 	if ((rc = spl_mutex_init()))
-		SGOTO(out2, rc);
+		goto out2;
 
 	if ((rc = spl_rw_init()))
-		SGOTO(out3, rc);
+		goto out3;
 
 	if ((rc = spl_taskq_init()))
-		SGOTO(out4, rc);
+		goto out4;
 
 	if ((rc = spl_vn_init()))
-		SGOTO(out5, rc);
+		goto out5;
 
 	if ((rc = spl_proc_init()))
-		SGOTO(out6, rc);
+		goto out6;
 
 	if ((rc = spl_kstat_init()))
-		SGOTO(out7, rc);
+		goto out7;
 
 	if ((rc = spl_tsd_init()))
-		SGOTO(out8, rc);
+		goto out8;
 
 	if ((rc = spl_zlib_init()))
-		SGOTO(out9, rc);
-
-#ifndef HAVE_KALLSYMS_LOOKUP_NAME
-	if ((rc = set_kallsyms_lookup_name()))
-		SGOTO(out10, rc = -EADDRNOTAVAIL);
-#endif /* HAVE_KALLSYMS_LOOKUP_NAME */
-
-	if ((rc = spl_kmem_init_kallsyms_lookup()))
-		SGOTO(out10, rc);
-
-	if ((rc = spl_vn_init_kallsyms_lookup()))
-		SGOTO(out10, rc);
+		goto out9;
 
 	printk(KERN_NOTICE "SPL: Loaded module v%s-%s%s\n", SPL_META_VERSION,
 	       SPL_META_RELEASE, SPL_DEBUG_STR);
-	SRETURN(rc);
-out10:
-	spl_zlib_fini();
+	return (rc);
+
 out9:
 	spl_tsd_fini();
 out8:
@@ -700,21 +569,18 @@ out4:
 out3:
 	spl_mutex_fini();
 out2:
-	spl_kmem_fini();
+	spl_kvmem_fini();
 out1:
-	spl_debug_fini();
-
 	printk(KERN_NOTICE "SPL: Failed to Load Solaris Porting Layer "
 	       "v%s-%s%s, rc = %d\n", SPL_META_VERSION, SPL_META_RELEASE,
 	       SPL_DEBUG_STR, rc);
-	return rc;
+
+	return (rc);
 }
 
-static void
+static void __exit
 spl_fini(void)
 {
-	SENTRY;
-
 	printk(KERN_NOTICE "SPL: Unloaded module v%s-%s%s\n",
 	       SPL_META_VERSION, SPL_META_RELEASE, SPL_DEBUG_STR);
 	spl_zlib_fini();
@@ -725,37 +591,13 @@ spl_fini(void)
 	spl_taskq_fini();
 	spl_rw_fini();
 	spl_mutex_fini();
-	spl_kmem_fini();
-	spl_debug_fini();
+	spl_kvmem_fini();
 }
-
-/* Called when a dependent module is loaded */
-void
-spl_setup(void)
-{
-        int rc;
-
-        /*
-         * At module load time the pwd is set to '/' on a Solaris system.
-         * On a Linux system will be set to whatever directory the caller
-         * was in when executing insmod/modprobe.
-         */
-        rc = vn_set_pwd("/");
-        if (rc)
-                printk("SPL: Warning unable to set pwd to '/': %d\n", rc);
-}
-EXPORT_SYMBOL(spl_setup);
-
-/* Called when a dependent module is unloaded */
-void
-spl_cleanup(void)
-{
-}
-EXPORT_SYMBOL(spl_cleanup);
 
 module_init(spl_init);
 module_exit(spl_fini);
 
-MODULE_AUTHOR("Lawrence Livermore National Labs");
 MODULE_DESCRIPTION("Solaris Porting Layer");
-MODULE_LICENSE("GPL");
+MODULE_AUTHOR(SPL_META_AUTHOR);
+MODULE_LICENSE(SPL_META_LICENSE);
+MODULE_VERSION(SPL_META_VERSION "-" SPL_META_RELEASE);

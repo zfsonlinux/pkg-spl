@@ -40,6 +40,7 @@
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/uio.h>
+#include <sys/user.h>
 #include <sys/sunldi.h>
 
 /*
@@ -102,14 +103,6 @@
 #define LOOKUP_XATTR		0x02
 #define CREATE_XATTR_DIR	0x04
 #define ATTR_NOACLCHECK		0x20
-
-#ifdef HAVE_PATH_IN_NAMEIDATA
-# define nd_dentry	path.dentry
-# define nd_mnt		path.mnt
-#else
-# define nd_dentry	dentry
-# define nd_mnt		mnt
-#endif
 
 typedef enum vtype {
 	VNON		= 0,
@@ -192,9 +185,9 @@ extern int vn_space(vnode_t *vp, int cmd, struct flock *bfp, int flag,
     offset_t offset, void *x6, void *x7);
 extern file_t *vn_getf(int fd);
 extern void vn_releasef(int fd);
+extern void vn_areleasef(int fd, uf_info_t *fip);
 extern int vn_set_pwd(const char *filename);
 
-int spl_vn_init_kallsyms_lookup(void);
 int spl_vn_init(void);
 void spl_vn_fini(void);
 
@@ -207,6 +200,7 @@ void spl_vn_fini(void);
 #define vn_is_readonly(vp)			0
 #define getf					vn_getf
 #define releasef				vn_releasef
+#define areleasef				vn_areleasef
 
 extern vnode_t *rootdir;
 

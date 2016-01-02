@@ -1,9 +1,7 @@
 /*****************************************************************************\
- *  Copyright (C) 2007-2010 Lawrence Livermore National Security, LLC.
- *  Copyright (C) 2007 The Regents of the University of California.
- *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
- *  Written by Brian Behlendorf <behlendorf1@llnl.gov>.
- *  UCRL-CODE-235197
+ *  Copyright (C) 2015 Cluster Inc.
+ *  Produced at ClusterHQ Inc (cf, DISCLAIMER).
+ *  Written by Richard Yao <richard.yao@clusterhq.com>.
  *
  *  This file is part of the SPL, Solaris Porting Layer.
  *  For details, see <http://zfsonlinux.org/>.
@@ -22,13 +20,23 @@
  *  with the SPL.  If not, see <http://www.gnu.org/licenses/>.
 \*****************************************************************************/
 
-#ifndef _SPL_UTSNAME_H
-#define _SPL_UTSNAME_H
+#ifndef _SPL_USER_H
+#define _SPL_USER_H
 
-#include <linux/utsname.h>
+/*
+ * We have uf_info_t for areleasef(). We implement areleasef() using a global
+ * linked list of all open file descriptors with the task structs referenced,
+ * so accessing the correct descriptor from areleasef() only requires knowing
+ * about the Linux task_struct. Since this is internal to our compatibility
+ * layer, we make it an opaque type.
+ *
+ * XXX: If the descriptor changes under us, we would get an incorrect
+ * reference.
+ */
 
-extern struct new_utsname *__utsname(void);
+struct uf_info;
+typedef struct uf_info uf_info_t;
 
-#define utsname			(*__utsname())
+#define P_FINFO(x) ((uf_info_t *)x)
 
-#endif /* SPL_UTSNAME_H */
+#endif /* SPL_USER_H */

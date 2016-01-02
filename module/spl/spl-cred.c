@@ -32,11 +32,6 @@
 
 #define DEBUG_SUBSYSTEM S_CRED
 
-#ifdef HAVE_GROUPS_SEARCH
-/* Symbol may be exported by custom kernel patch */
-#define cr_groups_search(gi, grp)	groups_search(gi, grp)
-#else
-/* Implementation from 2.6.30 kernel */
 static int
 #ifdef HAVE_KUIDGID_T
 cr_groups_search(const struct group_info *group_info, kgid_t grp)
@@ -44,7 +39,8 @@ cr_groups_search(const struct group_info *group_info, kgid_t grp)
 cr_groups_search(const struct group_info *group_info, gid_t grp)
 #endif
 {
-	unsigned int left, right;
+	unsigned int left, right, mid;
+	int cmp;
 
 	if (!group_info)
 		return 0;
@@ -52,8 +48,10 @@ cr_groups_search(const struct group_info *group_info, gid_t grp)
 	left = 0;
 	right = group_info->ngroups;
 	while (left < right) {
-		unsigned int mid = (left+right)/2;
-		int cmp = KGID_TO_SGID(grp) - KGID_TO_SGID(GROUP_AT(group_info, mid));
+		mid = (left + right) / 2;
+		cmp = KGID_TO_SGID(grp) -
+		    KGID_TO_SGID(GROUP_AT(group_info, mid));
+
 		if (cmp > 0)
 			left = mid + 1;
 		else if (cmp < 0)
@@ -63,14 +61,6 @@ cr_groups_search(const struct group_info *group_info, gid_t grp)
 	}
 	return 0;
 }
-#endif
-
-#ifdef HAVE_CRED_STRUCT
-
-/*
- * As of 2.6.29 a clean credential API appears in the linux kernel.
- * We attempt to layer the Solaris API on top of the linux API.
- */
 
 /* Hold a reference on the credential and group info */
 void
@@ -120,7 +110,7 @@ crgetgroups(const cred_t *cr)
 	return gids;
 }
 
-/* Check if the passed gid is available is in supplied credential. */
+/* Check if the passed gid is available in supplied credential. */
 int
 groupmember(gid_t gid, const cred_t *cr)
 {
@@ -128,92 +118,11 @@ groupmember(gid_t gid, const cred_t *cr)
 	int rc;
 
 	gi = get_group_info(cr->group_info);
-	rc = cr_groups_search(cr->group_info, SGID_TO_KGID(gid));
+	rc = cr_groups_search(gi, SGID_TO_KGID(gid));
 	put_group_info(gi);
 
 	return rc;
 }
-
-#else /* HAVE_CRED_STRUCT */
-
-/*
- * Until very recently all credential information was embedded in
- * the linux task struct.  For this reason to simulate a Solaris
- * cred_t we need to pass the entire task structure around.
- */
-
-/* Hold a reference on the credential and group info */
-void crhold(cred_t *cr) { }
-
-/* Free a reference on the credential and group info */
-void crfree(cred_t *cr) { }
-
-/* Return the number of supplemental groups */
-int
-crgetngroups(const cred_t *cr)
-{
-	int lock, rc;
-
-	lock = (cr != current);
-	if (lock)
-		task_lock((struct task_struct *)cr);
-
-	get_group_info(cr->group_info);
-	rc = cr->group_info->ngroups;
-	put_group_info(cr->group_info);
-
-	if (lock)
-		task_unlock((struct task_struct *)cr);
-
-	return rc;
-}
-
-/*
- * Return an array of supplemental gids.  The returned address is safe
- * to use as long as the caller has taken a reference with crhold().
- * The caller is responsible for releasing the reference with crfree().
- */
-gid_t *
-crgetgroups(const cred_t *cr)
-{
-	gid_t *gids;
-	int lock;
-
-	lock = (cr != current);
-	if (lock)
-		task_lock((struct task_struct *)cr);
-
-	get_group_info(cr->group_info);
-	gids = KGID_TO_SGID(cr->group_info->blocks[0]);
-	put_group_info(cr->group_info);
-
-	if (lock)
-		task_unlock((struct task_struct *)cr);
-
-	return gids;
-}
-
-/* Check if the passed gid is available is in supplied credential. */
-int
-groupmember(gid_t gid, const cred_t *cr)
-{
-	int lock, rc;
-
-	lock = (cr != current);
-	if (lock)
-		task_lock((struct task_struct *)cr);
-
-	get_group_info(cr->group_info);
-	rc = cr_groups_search(cr->group_info, gid);
-	put_group_info(cr->group_info);
-
-	if (lock)
-		task_unlock((struct task_struct *)cr);
-
-	return rc;
-}
-
-#endif /* HAVE_CRED_STRUCT */
 
 /* Return the effective user id */
 uid_t

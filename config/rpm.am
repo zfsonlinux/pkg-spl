@@ -51,7 +51,7 @@ rpm-local:
 	mkdir -p $(rpmbuild)/SPECS && \
 	cp ${RPM_SPEC_DIR}/$(rpmspec) $(rpmbuild)/SPECS && \
 	mkdir -p $(rpmbuild)/SOURCES && \
-	cp scripts/kmodtool $(rpmbuild)/SOURCES && \
+	cp $(top_srcdir)/scripts/kmodtool $(rpmbuild)/SOURCES && \
 	cp $(distdir).tar.gz $(rpmbuild)/SOURCES)
 
 srpm-common: dist
@@ -63,7 +63,7 @@ srpm-common: dist
 		rpmbuild="$$rpmbuild" \
 		rpmspec="$$rpmspec" \
 		rpm-local || exit 1; \
-	$(RPMBUILD) \
+	LANG=C $(RPMBUILD) \
 		--define "_tmppath $$rpmbuild/TMP" \
 		--define "_topdir $$rpmbuild" \
 		$(def) -bs $$rpmbuild/SPECS/$$rpmspec || exit 1; \
@@ -79,7 +79,7 @@ rpm-common:
 		rpmbuild="$$rpmbuild" \
 		rpmspec="$$rpmspec" \
 		rpm-local || exit 1; \
-	${RPMBUILD} \
+	LANG=C ${RPMBUILD} \
 		--define "_tmppath $$rpmbuild/TMP" \
 		--define "_topdir $$rpmbuild" \
 		$(def) --rebuild $$rpmpkg || exit 1; \
