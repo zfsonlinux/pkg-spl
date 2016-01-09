@@ -1,3 +1,40 @@
+spl-linux (0.6.5.4-1~trusty) trusty; urgency=low
+
+  [ Jason Zaman ]
+  * sysmacros: Make P2ROUNDUP not trigger int overflow
+
+  [ Brian Behlendorf ]
+  * Fix --enable-linux-builtin
+
+  [ Dimitri John Ledkov ]
+  * spl-kmem-cache: include linux/prefetch.h for prefetchw()
+
+  [ tuxoko ]
+  * Prevent rm modules.* when make install
+
+  [ Brian Behlendorf ]
+  * Either _ILP32 or _LP64 must be defined
+
+  [ zgock ]
+  * Fix build issue on some configured kernels
+
+  [ Kamil Domanski ]
+  * Skip GPL-only symbols test when cross-compiling
+
+  [ Chunwei Chen ]
+  * Use spl_fstrans_mark instead of memalloc_noio_save
+
+  [ tuxoko ]
+  * Fix taskq dynamic spawning
+
+  [ Alex McWhirter ]
+  * _ILP32 is always defined on SPARC
+
+  [ Ned Bass ]
+  * Prepare to tag spl-0.6.5.4
+
+ -- Darik Horn <dajhorn@vanadac.com>  Fri, 08 Jan 2016 21:41:22 -0500
+
 spl-linux (0.6.5.3-1~trusty) trusty; urgency=low
 
   [ Brian Behlendorf ]
