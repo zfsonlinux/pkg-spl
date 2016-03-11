@@ -1,3 +1,24 @@
+spl-linux (0.6.5.5-1~trusty) trusty; urgency=low
+
+  [ Chunwei Chen ]
+  * Don't call kmem_cache_shrink from shrinker
+  * Don't hold mutex until release cv in cv_wait
+  * Turn on both PF_FSTRANS and PF_MEMALLOC_NOIO in spl_fstrans_mark
+
+  [ Chip Parker ]
+  * Ensure spl/ only occurs once in core-y
+
+  [ Olaf Faaland ]
+  * Create spl-kmod-debuginfo rpm with redhat spec file
+
+  [ Brian Behlendorf ]
+  * Linux 4.5 compat: pfn_t typedef
+
+  [ Ned Bass ]
+  * Prepare to tag spl-0.6.5.5
+
+ -- Darik Horn <dajhorn@vanadac.com>  Thu, 10 Mar 2016 20:31:02 -0500
+
 spl-linux (0.6.5.4-1~trusty) trusty; urgency=low
 
   [ Jason Zaman ]
