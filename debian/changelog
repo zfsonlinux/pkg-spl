@@ -1,3 +1,16 @@
+spl-linux (0.6.5.6-1~precise) precise; urgency=low
+
+  [ Dimitri John Ledkov ]
+  * Add support for s390[x].
+
+  [ Brian Behlendorf ]
+  * Remove RPM package restriction
+
+  [ Ned Bass ]
+  * Prepare to tag spl-0.6.5.6
+
+ -- Darik Horn <dajhorn@vanadac.com>  Wed, 23 Mar 2016 19:37:40 -0400
+
 spl-linux (0.6.5.5-1~precise) precise; urgency=low
 
   [ Chunwei Chen ]
