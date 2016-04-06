@@ -1,3 +1,9 @@
+spl-linux (0.6.5.6-2) jessie; urgency=low
+
+  * Fix debian/gbp.conf
+
+ -- Turbo Fredriksson <turbo@debian.org>  Wed, 06 Apr 2016 14:44:38 +0200
+
 spl-linux (0.6.5.6-1) jessie; urgency=low
 
   * New upstream release
