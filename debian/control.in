@@ -11,18 +11,37 @@ Build-Depends: autotools-dev,
                automake,
                debhelper (>= 9),
                dkms (>> 2.1.1.2-5),
-               libtool,
-               ##MODULES_BUILD_DEPENDS##
+               libtool
 Standards-Version: 3.9.4
 Homepage: http://www.zfsonlinux.org/
 Vcs-Git: git://anonscm.debian.org/pkg-zfsonlinux/spl.git
 Vcs-Browser: http://anonscm.debian.org/gitweb/?p=pkg-zfsonlinux/spl.git
+
+Package: spl-modules-source
+Section: kernel
+Priority: extra
+Architecture: all
+Depends: ${misc:Depends}, debhelper (>= 8),
+ module-assistant | kernel-package, perl
+Conflicts: spl-dkms
+Replaces: spl-dkms
+Description: Native ZFS filesystem kernel modules for Linux
+ The Solaris Porting Layer (SPL) is a Linux kernel module which provides
+ many of the Solaris kernel APIs. This shim layer makes it possible to
+ run Solaris kernel code in the Linux kernel with relatively minimal
+ modification. The Solaris Porting LAyer Tests (SPLAT) is a Linux kernel
+ module which provides a testing harness for the SPL module.
+ .
+ This package provides the source to the SPL kernel module in a form
+ suitable for use by module-assistant or kernel-package.
 
 Package: spl-dkms
 Architecture: all
 Depends: linux-headers-amd64, ${misc:Depends}, dkms (>> 2.1.1.2-5), lsb-release, file
 Recommends: spl (>= ${source:Upstream-Version})
 Provides: spl-modules
+Conflicts: spl-modules-source
+Replaces: spl-modules-source
 Description: Solaris Porting Layer kernel modules for Linux
  The Solaris Porting Layer (SPL) is a Linux kernel module which provides
  many of the Solaris kernel APIs. This shim layer makes it possible to

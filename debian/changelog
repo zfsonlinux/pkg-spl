@@ -1,3 +1,12 @@
+spl-linux (0.6.5.6-3) jessie; urgency=low
+
+  * Merge in missing changes between 0.6.4-2-62e2eb and 0.6.5-1.
+    Accidentaly (?) created the 0.6.5.6-1 package from the 0.6.4-1b
+    tag instead of 0.6.5-1.
+    Closes: zfsonlinux/pkg-zfs#204
+
+ -- Turbo Fredriksson <turbo@debian.org>  Thu, 14 Apr 2016 12:14:45 +0200
+
 spl-linux (0.6.5.6-2) jessie; urgency=low
 
   * Fix debian/gbp.conf
@@ -9,6 +18,57 @@ spl-linux (0.6.5.6-1) jessie; urgency=low
   * New upstream release
 
  -- Turbo Fredriksson <turbo@debian.org>  Mon, 28 Mar 2016 17:12:52 +0200
+
+spl-linux (0.6.5-1) jessie; urgency=low
+
+  * New upstream release
+
+ -- Turbo Fredriksson <turbo@debian.org>  Thu, 17 Sep 2015 13:36:22 +0200
+
+spl-linux (0.6.4-8-8ac6ff) jessie; urgency=low
+
+  * Package zfs-modules-source needs to conflict and replace zfs-dkms
+    and vise versa.
+  * New upstream GIT version.
+
+ -- Turbo Fredriksson <turbo@debian.org>  Tue, 18 Aug 2015 12:29:48 +0200
+
+spl-linux (0.6.4-7-4699d7) jessie; urgency=low
+
+  * New upstream GIT version.
+
+ -- Turbo Fredriksson <turbo@debian.org>  Mon, 27 Jul 2015 17:54:47 +0200
+
+spl-linux (0.6.4-6-37d7cd) jessie; urgency=low
+
+  * New upstream GIT version.
+
+ -- Turbo Fredriksson <turbo@debian.org>  Sat, 18 Jul 2015 18:11:26 +0200
+
+spl-linux (0.6.4-5-3c8216) jessie; urgency=low
+
+  * New upstream GIT version.
+
+ -- Turbo Fredriksson <turbo@debian.org>  Fri, 26 Jun 2015 00:43:30 +0200
+
+spl-linux (0.6.4-4-234536) jessie; urgency=low
+
+  * New upstream GIT version.
+
+ -- Turbo Fredriksson <turbo@debian.org>  Thu, 11 Jun 2015 20:38:58 +0200
+
+spl-linux (0.6.4-3-a876b0) jessie; urgency=low
+
+  * New upstream GIT version.
+
+ -- Turbo Fredriksson <turbo@debian.org>  Thu, 11 Jun 2015 09:54:06 +0200
+
+spl-linux (0.6.4-2-62e2eb) jessie; urgency=low
+
+  * New upstream GIT version.
+    + Remove module package stuff.
+
+ -- Turbo Fredriksson <turbo@debian.org>  Tue, 12 May 2015 14:18:13 +0200
 
 spl-linux (0.6.4-1b) wheezy; urgency=low
 

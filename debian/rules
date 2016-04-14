@@ -1,5 +1,10 @@
 #!/usr/bin/make -f
 
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+LSB_DISTRIBUTOR := $(shell lsb_release -is)
+
 NAME := $(shell awk '$$1 == "Name:" { print $$2; }' META)
 VERSION := $(shell dpkg-parsechangelog \
   | awk '$$1 == "Version:" { print $$2; }' | cut -d- -f1)
@@ -17,6 +22,10 @@ ifndef KVERS
 KVERS=$(shell uname -r | sed 's/-$(DEB_HOST_ARCH)//')
 endif
 
+CFG_OPTS=--without-selinux \
+	--with-linux=$(KSRC) \
+	--with-linux-obj=$(KOBJ)
+
 non_epoch_version=$(shell echo $(KVERS) | perl -pe 's/^\d+://')
 PACKAGE=spl
 pmodules = $(PACKAGE)-modules-$(non_epoch_version)
@@ -24,14 +33,10 @@ pmodules = $(PACKAGE)-modules-$(non_epoch_version)
 KIMGVER=$(shell dpkg -s linux-image-$(KVERS)-$(DEB_HOST_ARCH) | grep ^Version | sed 's/.*: //')
 
 %:
-	dh $@ --with dkms
+	dh $@ --with dkms --parallel
 
 override_dh_prep-base-deb-files:
-	sed -e 's/##SHLIB_MAJOR##/$(SHLIB_MAJOR)/g ; s/##MODULES_BUILD_DEPENDS##/linux-headers-$(KVERS)-common, linux-headers-$(KVERS)-$(DEB_HOST_ARCH)/g' \
-	< debian/control.in > debian/control
-
-	sed -e 's/##KVERS##/$(KVERS)/g ; s/#KVERS#/$(KVERS)/g ; s/_KVERS_/$(KVERS)/g ; s/##KDREV##/$(KDREV)/g ; s/#KDREV#/$(KDREV)/g ; s/_KDREV_/$(KDREV)/g ; s/_ARCH_/$(DEB_HOST_ARCH)/g ; s/_IMGVER_/$(KIMGVER)/g' \
-	< debian/control.modules.in >> debian/control
+	sed -e 's/##SHLIB_MAJOR##/$(SHLIB_MAJOR)/g' < debian/control.in > debian/control
 
 	for templ in $(wildcard $(CURDIR)/debian/*_KVERS_*.in); do \
 		sed -e 's/##KVERS##/$(KVERS)/g ; s/#KVERS#/$(KVERS)/g ; s/_KVERS_/$(KVERS)/g ; s/##KDREV##/$(KDREV)/g ; s/#KDREV#/$(KDREV)/g ; s/_KDREV_/$(KDREV)/g ;  s/_ARCH_/$(DEB_HOST_ARCH)/g' \
@@ -51,27 +56,33 @@ override_dh_auto_configure: override_dh_prep-base-deb-files
 
 	@# Build the userland and the modules
 	dh_auto_configure -- \
-	  --prefix=/usr \
-	  --with-linux=$(KSRC) \
-	  --with-linux-obj=$(KOBJ)
+	  --with-config=user \
+	  --bindir=/bin \
+	  --sbindir=/sbin \
+	  --libdir=/lib \
+	  $(CFG_OPTS)
 
 override_dh_auto_test:
-	# scripts/check.sh tries insmod and rmmod, so it cannot
-	# run in an unprivileged build environment.
+	# The dh_auto_test rule is disabled because
+	# `make check` cannot run in an unprivileged build environment.
 
 override_dh_auto_install:
 	@# Install the utilities.
 	$(MAKE) install DESTDIR='$(CURDIR)/debian/tmp'
 
-	@# Get a bare copy of the source code.
-	@# This creates the $(CURDIR)/$(NAME)-$(VERSION)/ tree.
+	@# Get a bare copy of the source code for DKMS.
+	@# This creates the $(CURDIR)/$(NAME)-$(VERSION)/ tree, which does not
+	@# contain the userland sources. NB: Remove-userland-dist-rules.patch
 	$(MAKE) distdir
 
-	# Install the DKMS source.
+	@# Install the DKMS source.
 	@# We only want the files needed to build the modules
 	mkdir -p '$(CURDIR)/debian/tmp/usr/src/$(NAME)-$(VERSION)'
 	touch '$(CURDIR)/debian/tmp/usr/src/$(NAME)-$(VERSION)/.nogitrelease'
-	rm -Rf '$(CURDIR)/debian/tmp/usr/src/$(NAME)-$(VERSION)/include'
+	cp '$(CURDIR)/autogen.sh' '$(CURDIR)/debian/tmp/usr/src/$(NAME)-$(VERSION)/'
+	( for d in include module config; do \
+	     rm -Rf $(CURDIR)/debian/tmp/usr/src/$(NAME)-$(VERSION)/$$d; \
+	done)
 	$(foreach file,$(DKMSFILES),mv '$(CURDIR)/$(NAME)-$(VERSION)/$(file)' '$(CURDIR)/debian/tmp/usr/src/$(NAME)-$(VERSION)' || exit 1;)
 	@# Hellish awk line:
 	@#  * Deletes from configure.ac the parts not needed for building the kernel module
@@ -95,7 +106,27 @@ override_dh_auto_install:
 	echo 'cp "$$@"'  >>'$(CURDIR)/debian/tmp/usr/src/$(NAME)-$(VERSION)/cp'
 	chmod 755 '$(CURDIR)/debian/tmp/usr/src/$(NAME)-$(VERSION)/cp'
 
-	find '$(CURDIR)/debian/tmp' -name '*~' | xargs rm
+	@# Duplicate the dkms directory for module-assistant source package
+	install -d $(CURDIR)/debian/tmp/usr/src/modules
+	cp -r $(CURDIR)/debian/tmp/usr/src/$(NAME)-$(VERSION) $(CURDIR)/debian/tmp/usr/src/modules/$(PACKAGE)
+	mkdir -p $(CURDIR)/debian/tmp/usr/src/modules/$(PACKAGE)/debian
+	cp debian/copyright debian/module/* \
+	    $(CURDIR)/debian/tmp/usr/src/modules/$(PACKAGE)/debian/
+	sed 's/^spl-linux /spl-modules /' debian/changelog \
+	    > $(CURDIR)/debian/tmp/usr/src/modules/$(PACKAGE)/debian/changelog
+	chmod 755 $(CURDIR)/debian/tmp/usr/src/modules/$(PACKAGE)/debian/rules
+	chown -R root.src $(CURDIR)/debian/tmp
+	find $(CURDIR)/debian/tmp/usr/src -type d | xargs chmod 755
+	find $(CURDIR)/debian/tmp/usr/src -type f -perm -100 | xargs chmod 755
+	find $(CURDIR)/debian/tmp/usr/src -type f -not -perm -100 | xargs chmod 644
+	chmod 775 $(CURDIR)/debian/tmp/usr/src/modules
+	cd $(CURDIR)/debian/tmp/usr/src && tar cf $(PACKAGE).tar modules
+	rm -Rf $(CURDIR)/debian/tmp/usr/src/modules
+	bzip2 $(CURDIR)/debian/tmp/usr/src/$(PACKAGE).tar
+	chmod 644 $(CURDIR)/debian/tmp/usr/src/$(PACKAGE).tar.bz2
+	install -d $(CURDIR)/debian/spl-modules-source/usr/src
+	mv $(CURDIR)/debian/tmp/usr/src/$(PACKAGE).tar.bz2 $(CURDIR)/debian/spl-modules-source/usr/src/
+	rm -Rf $(CURDIR)/debian/spl-modules-source/usr/src/$(NAME)-$(VERSION)
 
 override_dh_dkms:
 	dh_dkms -V $(VERSION)
@@ -104,36 +135,13 @@ override_dh_auto_clean:
 	@dh_auto_clean
 	@if test -e META.orig; then mv META.orig META; fi
 
-# ------------
+override_dh_install:
+	find . -name lib*.la -delete
+	if [ ! -d debian/tmp/usr/lib/dracut -a -d debian/tmp/usr/share/dracut ]; then \
+		mv debian/tmp/usr/share/dracut debian/tmp/usr/lib/; \
+	fi
 
-override_dh_binary-modules-udeb:
-	dh_testdir
-	dh_testroot
-	dh_prep
+	dh_installdocs -pspl
+	dh_link -A 
 
-	$(MAKE) -C $(CURDIR)/module modules
-
-	dh_installdirs -p${pmodules}-di
-	dh_install -p${pmodules}-di
-	dh_gencontrol -p${pmodules}-di
-
-	dh_builddeb -p${pmodules}-di
-
-override_dh_binary-modules:
-	dh_testdir
-	dh_testroot
-	dh_prep
-
-	$(MAKE) -C $(CURDIR)/module modules
-
-	dh_installdocs -p${pmodules}
-	dh_install -p${pmodules}
-	dh_installchangelogs -p${pmodules}
-	dh_compress -p${pmodules}
-	dh_strip -p${pmodules}
-	dh_fixperms -p${pmodules}
-	dh_installdeb -p${pmodules}
-	dh_gencontrol -p${pmodules}
-	dh_md5sums -p${pmodules}
-
-	dh_builddeb -p${pmodules}
+	dh_install
