@@ -1,0 +1,3 @@
+changelog merge=ours
+gbp.conf merge=ours
+NEWS merge=ours
