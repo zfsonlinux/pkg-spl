@@ -1,3 +1,13 @@
+spl-linux (0.6.5.7-1~wily) wily; urgency=low
+
+  [ Brian Behlendorf ]
+  * Fix do_div() types in condvar:timeout
+
+  [ Ned Bass ]
+  * Prepare to tag spl-0.6.5.7
+
+ -- Darik Horn <dajhorn@vanadac.com>  Fri, 13 May 2016 21:12:45 -0400
+
 spl-linux (0.6.5.6-1~wily) wily; urgency=low
 
   [ Dimitri John Ledkov ]
