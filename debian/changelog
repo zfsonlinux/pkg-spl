@@ -1,3 +1,9 @@
+spl-linux (0.6.5.999-54-g39cd90e-sid-daily) sid-daily; urgency=medium
+
+  * New daily release - 39cd90e.
+
+ -- Turbo Fredriksson <turbo@debian.org>  Thu, 19 May 2016 01:12:21 +0000
+
 spl-linux (0.6.5-53-g5e39e4f-sid-daily) sid-daily; urgency=low
 
   * New upstream daily release.
