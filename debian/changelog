@@ -1,3 +1,9 @@
+spl-linux (0.6.5.7-5-trusty) trusty; urgency=medium
+
+  * New upstream release - 03a97b0.
+
+ -- Turbo Fredriksson <turbo@debian.org>  Fri, 20 May 2016 17:47:41 +0000
+
 spl-linux (0.6.5.7-4-jessie) jessie; urgency=medium
 
   * New upstream release - 03a97b0.
