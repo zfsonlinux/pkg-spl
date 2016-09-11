@@ -1,3 +1,185 @@
+spl-linux (0.7.0-rc1-1~trusty~gbp87462f) trusty; urgency=low
+
+  ** SNAPSHOT build @87462f592e7bdc52f5ee82fb785d7084901d4400 **
+
+  [ Brian Behlendorf ]
+  * Fix spl-dkms uninstall/update
+
+  [ Chunwei Chen ]
+  * Don't take spin lock on rwlock owner
+  * rwsem use kernel provided owner when possible
+  * Use tab indent in rwlock.h
+
+  [ Brian Behlendorf ]
+  * Fix CPU hotplug
+
+  [ Chunwei Chen ]
+  * Don't call kmem_cache_shrink from shrinker
+
+  [ tuxoko ]
+  * Fix taskq dynamic spawning
+
+  [ Jason Zaman ]
+  * sysmacros: Make P2ROUNDUP not trigger int overflow
+
+  [ loli10K ]
+  * Remove superfluous `newline` character
+
+  [ Brian Behlendorf ]
+  * Limit maximum object size in kmem tests
+  * Fix --enable-linux-builtin
+
+  [ Dimitri John Ledkov ]
+  * spl-kmem-cache: include linux/prefetch.h for prefetchw()
+
+  [ Tim Chase ]
+  * Additional dkio support for TRIM/Discard
+
+  [ Boris Protopopov ]
+  * Add a script to display SPL slab cache statistics
+
+  [ tuxoko ]
+  * Prevent rm modules.* when make install
+
+  [ Richard Yao ]
+  * Fix race between getf() and areleasef()
+  * Make taskq_member() use ->journal_info
+
+  [ Brian Behlendorf ]
+  * Revert "Make taskq_member() use ->journal_info"
+  * Either _ILP32 or _LP64 must be defined
+
+  [ zgock ]
+  * Fix build issue on some configured kernels
+
+  [ Kamil Domański ]
+  * Skip GPL-only symbols test when cross-compiling
+
+  [ Olaf Faaland ]
+  * Add new lock types MUTEX_NOLOCKDEP, and RW_NOLOCKDEP
+  * Fix lockdep warning in spl_inode_{lock,unlock}
+  * Subclass tq_lock to eliminate a lockdep warning
+
+  [ Chunwei Chen ]
+  * Don't use tq->tq_lock_flags
+
+  [ Brian Behlendorf ]
+  * Fix cstyle issues in spl-taskq.c and taskq.h
+  * Revert "Skip GPL-only symbols test when cross-compiling"
+
+  [ Kamil Domanski ]
+  * Skip GPL-only symbols test when cross-compiling
+
+  [ Tim Chase ]
+  * Provide kstat for taskqs
+
+  [ Chunwei Chen ]
+  * Use spl_fstrans_mark instead of memalloc_noio_save
+
+  [ Brian Behlendorf ]
+  * Fix do_div() types in condvar:timeout
+
+  [ Alex McWhirter ]
+  * _ILP32 is always defined on SPARC
+
+  [ Brian Behlendorf ]
+  * Add spl_kmem_cache_kmem_threads man page entry
+
+  [ Chunwei Chen ]
+  * Don't hold mutex until release cv in cv_wait
+  * Turn on both PF_FSTRANS and PF_MEMALLOC_NOIO in spl_fstrans_mark
+
+  [ Brian Behlendorf ]
+  * Linux 4.5 compat: pfn_t typedef
+
+  [ Chunwei Chen ]
+  * Use tsd to store tq for taskq_member
+
+  [ Olaf Faaland ]
+  * Create spl-kmod-debuginfo rpm with redhat spec file
+
+  [ Richard Yao ]
+  * kobj_read_file: Return -1 on vn_rdwr() error
+
+  [ Brian Behlendorf ]
+  * Remove RLIM64_INFINITY assert in vn_rdwr()
+
+  [ Chip Parker ]
+  * Ensure spl/ only occurs once in core-y
+
+  [ Chunwei Chen ]
+  * Allow kicking a taskq to spawn more threads
+
+  [ Richard Yao ]
+  * random_get_pseudo_bytes() need not provide cryptographic strength entropy
+
+  [ Tom Caputi ]
+  * Changes to support zfs encryption
+
+  [ Brian Behlendorf ]
+  * Remove RPM package restriction
+  * Add rw_tryupgrade()
+
+  [ Tim Chase ]
+  * Allow spawning a new thread for TQ_NOQUEUE dispatch with dynamic taskq
+
+  [ Dimitri John Ledkov ]
+  * Add support for s390[x].
+
+  [ Chunwei Chen ]
+  * Use kernel provided mutex owner
+
+  [ Tim Chase ]
+  * Use vmem_free() in dfl_free() and add dfl_alloc()
+  * Clear PF_FSTRANS over spl_filp_fallocate()
+
+  [ David Quigley ]
+  * Add a macro to convert seconds to nanoseconds and vice-versa
+
+  [ Chunwei Chen ]
+  * Add cv_timedwait_sig_hires to allow interruptible sleep
+  * Linux 4.7 compat: inode_lock() and friends
+  * Restore CALLOUT_FLAG_ABSOLUTE in cv_timedwait_hires
+  * Fix race between taskq_destroy and dynamic spawning thread
+  * Fix taskq_wait_outstanding re-evaluate tq_next_id
+
+  [ YunQiang Su ]
+  * Add isa_defs for MIPS
+
+  [ Chunwei Chen ]
+  * Implement a proper rw_tryupgrade
+  * Fix use-after-free in splat_taskq_test7
+
+  [ Jinshan Xiong ]
+  * Improve spl slab cache alloc
+
+  [ Tony Hutter ]
+  * Add _ALIGNMENT_REQUIRED to isa_defs.h for checksums
+
+  [ Tom Caputi ]
+  * Added highbit() and lowbit() macros
+
+  [ Brian Behlendorf ]
+  * Linux 4.8 compat: rw_semaphore atomic_long_t count
+
+  [ Nikolay Borisov ]
+  * Add gitignore entry for spl-*.o.d files
+  * Add handling for kernel 4.7's CONFIG_TRIM_UNUSED_KSYMS
+
+  [ Tim Chase ]
+  * Fix HAVE_MUTEX_OWNER test for kernels prior to 4.6
+
+  [ GeLiXin ]
+  * Fix: handle NULL case in spl_kmem_free_track()
+
+  [ Brian Behlendorf ]
+  * Tag 0.7.0-rc1
+
+  [ Darik Horn ]
+  * Update debian/gbp.conf for snapshot builds.
+
+ -- Darik Horn <dajhorn@vanadac.com>  Sun, 11 Sep 2016 15:11:21 -0400
+
 spl-linux (0.6.5.7-1~trusty) trusty; urgency=low
 
   [ Brian Behlendorf ]
