@@ -1,3 +1,19 @@
+spl-linux (0.7.0-rc1-2~trusty~gbp5ac765) trusty; urgency=low
+
+  ** SNAPSHOT build @5ac76578982fa16a3a94145a3aa8a43af5e43549 **
+
+  [ tuxoko ]
+  * Cleanup in cred.h
+
+  [ legend-hua ]
+  * Fix spl check.sh script
+
+  [ Brian Behlendorf ]
+  * Increase spl_kmem_alloc_warn limit
+  * Fix automatically generated release number
+
+ -- Darik Horn <dajhorn@vanadac.com>  Tue, 27 Sep 2016 22:49:14 -0400
+
 spl-linux (0.7.0-rc1-1~trusty~gbp87462f) trusty; urgency=low
 
   ** SNAPSHOT build @87462f592e7bdc52f5ee82fb785d7084901d4400 **
