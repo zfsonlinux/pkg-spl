@@ -55,7 +55,7 @@ EXPORT_SYMBOL(spl_hostid);
 module_param(spl_hostid, ulong, 0644);
 MODULE_PARM_DESC(spl_hostid, "The system hostid.");
 
-proc_t p0 = { 0 };
+proc_t p0;
 EXPORT_SYMBOL(p0);
 
 /*
@@ -638,7 +638,7 @@ spl_random_init(void)
 		    "0x%016llx%016llx.", cpu_to_be64(s[0]), cpu_to_be64(s[1]));
 	}
 
-	for (i = 0; i < NR_CPUS; i++) {
+	for_each_possible_cpu(i) {
 		uint64_t *wordp = per_cpu(spl_pseudo_entropy, i);
 
 		spl_rand_jump(s);
@@ -660,6 +660,7 @@ spl_init(void)
 {
 	int rc = 0;
 
+	bzero(&p0, sizeof (proc_t));
 	spl_random_init();
 
 	if ((rc = spl_kvmem_init()))
