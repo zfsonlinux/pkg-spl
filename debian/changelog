@@ -1,3 +1,25 @@
+spl-linux (0.7.0-rc2-1~trusty~1.gbpd901ab) trusty; urgency=low
+
+  ** SNAPSHOT build @d901abb7a4e3c86778f1c060ead6c923aae7cd57 **
+
+  [ Brian Behlendorf ]
+  * Fix aarch64 type warning
+  * Fix p0 initializer
+
+  [ tuxoko ]
+  * Linux 4.8 compat: Fix RW_READ_HELD
+  * Fix out-of-bound in per_cpu in spl_random_init
+
+  [ Chunwei Chen ]
+  * Fix crgetgroups out-of-bound and misc cred fix
+  * Fix splat-cred.c cred usage
+  * Linux 4.9 compat: group_info changes
+
+  [ Brian Behlendorf ]
+  * Tag 0.7.0-rc2
+
+ -- Darik Horn <dajhorn@vanadac.com>  Wed, 26 Oct 2016 22:46:07 -0400
+
 spl-linux (0.7.0-rc1-2~trusty~gbp5ac765) trusty; urgency=low
 
   ** SNAPSHOT build @5ac76578982fa16a3a94145a3aa8a43af5e43549 **
