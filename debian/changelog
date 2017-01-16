@@ -1,3 +1,39 @@
+spl-linux (0.6.5.8-1~trusty) trusty; urgency=low
+
+  [ GeLiXin ]
+  * Fix: handle NULL case in spl_kmem_free_track()
+
+  [ Chunwei Chen ]
+  * Linux 4.7 compat: inode_lock() and friends
+
+  [ YunQiang Su ]
+  * Add isa_defs for MIPS
+
+  [ Chunwei Chen ]
+  * Use kernel provided mutex owner
+  * Fix race between taskq_destroy and dynamic spawning thread
+  * Fix taskq_wait_outstanding re-evaluate tq_next_id
+
+  [ Brian Behlendorf ]
+  * Add rw_tryupgrade()
+
+  [ Chunwei Chen ]
+  * Implement a proper rw_tryupgrade
+
+  [ Brian Behlendorf ]
+  * Linux 4.8 compat: rw_semaphore atomic_long_t count
+
+  [ Nikolay Borisov ]
+  * Add handling for kernel 4.7's CONFIG_TRIM_UNUSED_KSYMS
+
+  [ Tim Chase ]
+  * Fix HAVE_MUTEX_OWNER test for kernels prior to 4.6
+
+  [ Ned Bass ]
+  * Prepare to release 0.6.5.8
+
+ -- Darik Horn <dajhorn@vanadac.com>  Sun, 15 Jan 2017 21:24:38 -0500
+
 spl-linux (0.6.5.7-1~trusty) trusty; urgency=low
 
   [ Brian Behlendorf ]
