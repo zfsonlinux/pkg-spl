@@ -1,3 +1,38 @@
+spl-linux (0.7.0-rc3-1~trusty~1.gbp1d1637) trusty; urgency=low
+
+  ** SNAPSHOT build @1d16377fa5e47f3c55eaef7a951ebe220d0e0910 **
+
+  [ Ubuntu ]
+  * Fix vmem_size()
+  * Add TASKQID_INVALID and TASKQID_INITIAL macros
+
+  [ Chunwei Chen ]
+  * Limit number of tasks shown in taskq proc
+  * Add system_delay_taskq for long delay
+  * Fix splat memleak
+  * Refactor some splat macro to function
+
+  [ Clemens Fruhwirth ]
+  * Remove stale comment from rw_tryupgrade()
+  * Add support for rw semaphore under PREEMPT_RT_FULL
+
+  [ RageLtMan ]
+  * Update struct member intializers to C89
+
+  [ Kevin Tanguy ]
+  * Add support for recent kmem_cache_create_usercopy
+
+  [ George Melikov ]
+  * Remove identical if statements in module/spl/spl-vnode.c
+
+  [ clefru ]
+  * Reimplement rt_mutex_owner to fix build with DEBUG & PREEMPT_RT_FULL
+
+  [ Brian Behlendorf ]
+  * Tag 0.7.0-rc3
+
+ -- Darik Horn <dajhorn@vanadac.com>  Fri, 20 Jan 2017 18:29:59 -0500
+
 spl-linux (0.7.0-rc2-1~trusty~1.gbpd901ab) trusty; urgency=low
 
   ** SNAPSHOT build @d901abb7a4e3c86778f1c060ead6c923aae7cd57 **
