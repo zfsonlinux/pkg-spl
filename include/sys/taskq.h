@@ -57,6 +57,12 @@
 #define	TQ_FRONT		0x08000000
 
 /*
+ * Reserved taskqid values.
+ */
+#define	TASKQID_INVALID		((taskqid_t)0)
+#define	TASKQID_INITIAL		((taskqid_t)1)
+
+/*
  * spin_lock(lock) and spin_lock_nested(lock,0) are equivalent,
  * so TQ_LOCK_DYNAMIC must not evaluate to 0
  */
@@ -123,6 +129,8 @@ typedef struct taskq_thread {
 
 /* Global system-wide dynamic task queue available for all consumers */
 extern taskq_t *system_taskq;
+/* Global dynamic task queue for long delay */
+extern taskq_t *system_delay_taskq;
 
 /* List of all taskqs */
 extern struct list_head tq_list;

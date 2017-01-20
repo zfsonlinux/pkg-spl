@@ -50,6 +50,9 @@ MODULE_PARM_DESC(spl_taskq_thread_sequential,
 /* Global system-wide dynamic task queue available for all consumers */
 taskq_t *system_taskq;
 EXPORT_SYMBOL(system_taskq);
+/* Global dynamic task queue for long delay */
+taskq_t *system_delay_taskq;
+EXPORT_SYMBOL(system_delay_taskq);
 
 /* Private dedicated taskq for creating new taskq threads on demand. */
 static taskq_t *dynamic_taskq;
@@ -190,7 +193,7 @@ task_done(taskq_t *tq, taskq_ent_t *t)
 	list_del_init(&t->tqent_list);
 
 	if (tq->tq_nalloc <= tq->tq_minalloc) {
-		t->tqent_id = 0;
+		t->tqent_id = TASKQID_INVALID;
 		t->tqent_func = NULL;
 		t->tqent_arg = NULL;
 		t->tqent_flags = 0;
@@ -276,7 +279,7 @@ taskq_lowest_id(taskq_t *tq)
 	if (!list_empty(&tq->tq_active_list)) {
 		tqt = list_entry(tq->tq_active_list.next, taskq_thread_t,
 		    tqt_active_list);
-		ASSERT(tqt->tqt_id != 0);
+		ASSERT(tqt->tqt_id != TASKQID_INVALID);
 		lowest_id = MIN(lowest_id, tqt->tqt_id);
 	}
 
@@ -548,7 +551,7 @@ taskqid_t
 taskq_dispatch(taskq_t *tq, task_func_t func, void *arg, uint_t flags)
 {
 	taskq_ent_t *t;
-	taskqid_t rc = 0;
+	taskqid_t rc = TASKQID_INVALID;
 	unsigned long irqflags;
 
 	ASSERT(tq);
@@ -611,7 +614,7 @@ taskqid_t
 taskq_dispatch_delay(taskq_t *tq, task_func_t func, void *arg,
     uint_t flags, clock_t expire_time)
 {
-	taskqid_t rc = 0;
+	taskqid_t rc = TASKQID_INVALID;
 	taskq_ent_t *t;
 	unsigned long irqflags;
 
@@ -667,7 +670,7 @@ taskq_dispatch_ent(taskq_t *tq, task_func_t func, void *arg, uint_t flags,
 
 	/* Taskq being destroyed and all tasks drained */
 	if (!(tq->tq_flags & TASKQ_ACTIVE)) {
-		t->tqent_id = 0;
+		t->tqent_id = TASKQID_INVALID;
 		goto out;
 	}
 
@@ -941,7 +944,7 @@ taskq_thread(void *args)
 			    taskq_thread_spawn(tq))
 				seq_tasks = 0;
 
-			tqt->tqt_id = 0;
+			tqt->tqt_id = TASKQID_INVALID;
 			tqt->tqt_flags = 0;
 			wake_up_all(&tq->tq_wait_waitq);
 		} else {
@@ -975,7 +978,7 @@ taskq_thread_create(taskq_t *tq)
 	INIT_LIST_HEAD(&tqt->tqt_thread_list);
 	INIT_LIST_HEAD(&tqt->tqt_active_list);
 	tqt->tqt_tq = tq;
-	tqt->tqt_id = 0;
+	tqt->tqt_id = TASKQID_INVALID;
 
 	tqt->tqt_thread = spl_kthread_create(taskq_thread, tqt,
 	    "%s", tq->tq_name);
@@ -1037,8 +1040,8 @@ taskq_create(const char *name, int nthreads, pri_t pri,
 	tq->tq_maxalloc = maxalloc;
 	tq->tq_nalloc = 0;
 	tq->tq_flags = (flags | TASKQ_ACTIVE);
-	tq->tq_next_id = 1;
-	tq->tq_lowest_id = 1;
+	tq->tq_next_id = TASKQID_INITIAL;
+	tq->tq_lowest_id = TASKQID_INITIAL;
 	INIT_LIST_HEAD(&tq->tq_free_list);
 	INIT_LIST_HEAD(&tq->tq_pend_list);
 	INIT_LIST_HEAD(&tq->tq_prio_list);
@@ -1238,10 +1241,18 @@ spl_taskq_init(void)
 	if (system_taskq == NULL)
 		return (1);
 
+	system_delay_taskq = taskq_create("spl_delay_taskq", MAX(boot_ncpus, 4),
+	    maxclsyspri, boot_ncpus, INT_MAX, TASKQ_PREPOPULATE|TASKQ_DYNAMIC);
+	if (system_delay_taskq == NULL) {
+		taskq_destroy(system_taskq);
+		return (1);
+	}
+
 	dynamic_taskq = taskq_create("spl_dynamic_taskq", 1,
 	    maxclsyspri, boot_ncpus, INT_MAX, TASKQ_PREPOPULATE);
 	if (dynamic_taskq == NULL) {
 		taskq_destroy(system_taskq);
+		taskq_destroy(system_delay_taskq);
 		return (1);
 	}
 
@@ -1260,6 +1271,9 @@ spl_taskq_fini(void)
 {
 	taskq_destroy(dynamic_taskq);
 	dynamic_taskq = NULL;
+
+	taskq_destroy(system_delay_taskq);
+	system_delay_taskq = NULL;
 
 	taskq_destroy(system_taskq);
 	system_taskq = NULL;
