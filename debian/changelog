@@ -1,3 +1,26 @@
+spl-linux (0.6.5.9-1~trusty) trusty; urgency=low
+
+  [ Chunwei Chen ]
+  * Fix crgetgroups out-of-bound and misc cred fix
+  * Linux 4.9 compat: group_info changes
+
+  [ tuxoko ]
+  * Linux 4.8 compat: Fix RW_READ_HELD
+
+  [ Brian Behlendorf ]
+  * Fix aarch64 type warning
+  * Fix p0 initializer
+
+  [ Chunwei Chen ]
+  * Fix splat memleak
+  * Fix splat-cred.c cred usage
+  * Use kernel slab for vn_cache and vn_file_cache
+
+  [ Brian Behlendorf ]
+  * Prepare to release 0.6.5.9
+
+ -- Darik Horn <dajhorn@vanadac.com>  Sat, 04 Feb 2017 10:03:57 -0500
+
 spl-linux (0.6.5.8-1~trusty) trusty; urgency=low
 
   [ GeLiXin ]
