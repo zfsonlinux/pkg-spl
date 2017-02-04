@@ -32,65 +32,55 @@
 
 #define DEBUG_SUBSYSTEM S_RWLOCK
 
-#ifdef CONFIG_RWSEM_GENERIC_SPINLOCK
-
-/*
- * From lib/rwsem-spinlock.c but modified such that the caller is
- * responsible for acquiring and dropping the sem->wait_lock.
- */
-struct rwsem_waiter {
-        struct list_head list;
-        struct task_struct *task;
-        unsigned int flags;
-#define RWSEM_WAITING_FOR_READ  0x00000001
-#define RWSEM_WAITING_FOR_WRITE 0x00000002
-};
-
-/* wake a single writer */
-static struct rw_semaphore *
-__rwsem_wake_one_writer_locked(struct rw_semaphore *sem)
+#if defined(CONFIG_RWSEM_GENERIC_SPINLOCK)
+static int
+__rwsem_tryupgrade(struct rw_semaphore *rwsem)
 {
-        struct rwsem_waiter *waiter;
-        struct task_struct *tsk;
-
-        sem->activity = -1;
-
-        waiter = list_entry(sem->wait_list.next, struct rwsem_waiter, list);
-        list_del(&waiter->list);
-
-        tsk = waiter->task;
-        smp_mb();
-        waiter->task = NULL;
-        wake_up_process(tsk);
-        put_task_struct(tsk);
-        return sem;
+	int ret = 0;
+	unsigned long flags;
+	spl_rwsem_lock_irqsave(&rwsem->wait_lock, flags);
+	if (RWSEM_COUNT(rwsem) == SPL_RWSEM_SINGLE_READER_VALUE &&
+	    list_empty(&rwsem->wait_list)) {
+		ret = 1;
+		RWSEM_COUNT(rwsem) = SPL_RWSEM_SINGLE_WRITER_VALUE;
+	}
+	spl_rwsem_unlock_irqrestore(&rwsem->wait_lock, flags);
+	return (ret);
 }
-
-/* release a read lock on the semaphore */
-void
-__up_read_locked(struct rw_semaphore *sem)
+#elif defined(HAVE_RWSEM_ATOMIC_LONG_COUNT)
+static int
+__rwsem_tryupgrade(struct rw_semaphore *rwsem)
 {
-        if (--sem->activity == 0 && !list_empty(&sem->wait_list))
-                (void)__rwsem_wake_one_writer_locked(sem);
+	long val;
+	val = atomic_long_cmpxchg(&rwsem->count, SPL_RWSEM_SINGLE_READER_VALUE,
+	    SPL_RWSEM_SINGLE_WRITER_VALUE);
+	return (val == SPL_RWSEM_SINGLE_READER_VALUE);
 }
-EXPORT_SYMBOL(__up_read_locked);
-
-/* trylock for writing -- returns 1 if successful, 0 if contention */
-int
-__down_write_trylock_locked(struct rw_semaphore *sem)
+#else
+static int
+__rwsem_tryupgrade(struct rw_semaphore *rwsem)
 {
-        int ret = 0;
-
-        if (sem->activity == 0 && list_empty(&sem->wait_list)) {
-                sem->activity = -1;
-                ret = 1;
-        }
-
-        return ret;
+	typeof (rwsem->count) val;
+	val = cmpxchg(&rwsem->count, SPL_RWSEM_SINGLE_READER_VALUE,
+	    SPL_RWSEM_SINGLE_WRITER_VALUE);
+	return (val == SPL_RWSEM_SINGLE_READER_VALUE);
 }
-EXPORT_SYMBOL(__down_write_trylock_locked);
-
 #endif
+
+int
+rwsem_tryupgrade(struct rw_semaphore *rwsem)
+{
+	if (__rwsem_tryupgrade(rwsem)) {
+		rwsem_release(&rwsem->dep_map, 1, _RET_IP_);
+		rwsem_acquire(&rwsem->dep_map, 0, 1, _RET_IP_);
+#ifdef CONFIG_RWSEM_SPIN_ON_OWNER
+		rwsem->owner = current;
+#endif
+		return (1);
+	}
+	return (0);
+}
+EXPORT_SYMBOL(rwsem_tryupgrade);
 
 int spl_rw_init(void) { return 0; }
 void spl_rw_fini(void) { }

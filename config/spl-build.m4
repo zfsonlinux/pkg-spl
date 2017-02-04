@@ -24,6 +24,7 @@ AC_DEFUN([SPL_AC_CONFIG_KERNEL], [
 	SPL_AC_ATOMIC_SPINLOCK
 	SPL_AC_SHRINKER_CALLBACK
 	SPL_AC_CTL_NAME
+	SPL_AC_CONFIG_TRIM_UNUSED_KSYMS
 	SPL_AC_PDE_DATA
 	SPL_AC_SET_FS_PWD_WITH_CONST
 	SPL_AC_2ARGS_VFS_UNLINK
@@ -39,11 +40,16 @@ AC_DEFUN([SPL_AC_CONFIG_KERNEL], [
 	SPL_AC_2ARGS_ZLIB_DEFLATE_WORKSPACESIZE
 	SPL_AC_SHRINK_CONTROL_STRUCT
 	SPL_AC_RWSEM_SPINLOCK_IS_RAW
+	SPL_AC_RWSEM_ACTIVITY
+	SPL_AC_RWSEM_ATOMIC_LONG_COUNT
 	SPL_AC_SCHED_RT_HEADER
 	SPL_AC_2ARGS_VFS_GETATTR
 	SPL_AC_USLEEP_RANGE
 	SPL_AC_KMEM_CACHE_ALLOCFLAGS
 	SPL_AC_WAIT_ON_BIT
+	SPL_AC_INODE_LOCK
+	SPL_AC_MUTEX_OWNER
+	SPL_AC_GROUP_INFO_GID
 ])
 
 AC_DEFUN([SPL_AC_MODULE_SYMVERS], [
@@ -1245,6 +1251,26 @@ AC_DEFUN([SPL_AC_CONFIG_ZLIB_DEFLATE], [
 ])
 
 dnl #
+dnl # config trim unused symbols,
+dnl # Verify the kernel has CONFIG_TRIM_UNUSED_KSYMS DISABLED.
+dnl #
+AC_DEFUN([SPL_AC_CONFIG_TRIM_UNUSED_KSYMS], [
+	AC_MSG_CHECKING([whether CONFIG_TRIM_UNUSED_KSYM is disabled])
+	SPL_LINUX_TRY_COMPILE([
+		#if defined(CONFIG_TRIM_UNUSED_KSYMS)
+		#error CONFIG_TRIM_UNUSED_KSYMS not defined
+		#endif
+	],[ ],[
+		AC_MSG_RESULT([yes])
+	],[
+		AC_MSG_RESULT([no])
+		AC_MSG_ERROR([
+	*** This kernel has unused symbols trimming enabled, please disable.
+	*** Rebuild the kernel with CONFIG_TRIM_UNUSED_KSYMS=n set.])
+	])
+])
+
+dnl #
 dnl # 2.6.39 API compat,
 dnl # The function zlib_deflate_workspacesize() now take 2 arguments.
 dnl # This was done to avoid always having to allocate the maximum size
@@ -1308,6 +1334,55 @@ AC_DEFUN([SPL_AC_RWSEM_SPINLOCK_IS_RAW], [
 		AC_MSG_RESULT(yes)
 		AC_DEFINE(RWSEM_SPINLOCK_IS_RAW, 1,
 		[struct rw_semaphore member wait_lock is raw_spinlock_t])
+	],[
+		AC_MSG_RESULT(no)
+	])
+	EXTRA_KCFLAGS="$tmp_flags"
+])
+
+dnl #
+dnl # 3.16 API Change
+dnl #
+dnl # rwsem-spinlock "->activity" changed to "->count"
+dnl #
+AC_DEFUN([SPL_AC_RWSEM_ACTIVITY], [
+	AC_MSG_CHECKING([whether struct rw_semaphore has member activity])
+	tmp_flags="$EXTRA_KCFLAGS"
+	EXTRA_KCFLAGS="-Werror"
+	SPL_LINUX_TRY_COMPILE([
+		#include <linux/rwsem.h>
+	],[
+		struct rw_semaphore dummy_semaphore __attribute__ ((unused));
+		dummy_semaphore.activity = 0;
+	],[
+		AC_MSG_RESULT(yes)
+		AC_DEFINE(HAVE_RWSEM_ACTIVITY, 1,
+		[struct rw_semaphore has member activity])
+	],[
+		AC_MSG_RESULT(no)
+	])
+	EXTRA_KCFLAGS="$tmp_flags"
+])
+
+dnl #
+dnl # 4.8 API Change
+dnl #
+dnl # rwsem "->count" changed to atomic_long_t type
+dnl #
+AC_DEFUN([SPL_AC_RWSEM_ATOMIC_LONG_COUNT], [
+	AC_MSG_CHECKING(
+	[whether struct rw_semaphore has atomic_long_t member count])
+	tmp_flags="$EXTRA_KCFLAGS"
+	EXTRA_KCFLAGS="-Werror"
+	SPL_LINUX_TRY_COMPILE([
+		#include <linux/rwsem.h>
+	],[
+		DECLARE_RWSEM(dummy_semaphore);
+		(void) atomic_long_read(&dummy_semaphore.count);
+	],[
+		AC_MSG_RESULT(yes)
+		AC_DEFINE(HAVE_RWSEM_ATOMIC_LONG_COUNT, 1,
+		[struct rw_semaphore has atomic_long_t member count])
 	],[
 		AC_MSG_RESULT(no)
 	])
@@ -1446,4 +1521,79 @@ AC_DEFUN([SPL_AC_WAIT_ON_BIT], [
 	],[
 		AC_MSG_RESULT(no)
 	])
+])
+
+dnl #
+dnl # 4.7 API change
+dnl # i_mutex is changed to i_rwsem. Instead of directly using
+dnl # i_mutex/i_rwsem, we should use inode_lock() and inode_lock_shared()
+dnl # We test inode_lock_shared because inode_lock is introduced earlier.
+dnl #
+AC_DEFUN([SPL_AC_INODE_LOCK], [
+	AC_MSG_CHECKING([whether inode_lock_shared() exists])
+	tmp_flags="$EXTRA_KCFLAGS"
+	EXTRA_KCFLAGS="-Werror"
+	SPL_LINUX_TRY_COMPILE([
+		#include <linux/fs.h>
+	],[
+		struct inode *inode = NULL;
+		inode_lock_shared(inode);
+	],[
+		AC_MSG_RESULT(yes)
+		AC_DEFINE(HAVE_INODE_LOCK_SHARED, 1, [yes])
+	],[
+		AC_MSG_RESULT(no)
+	])
+	EXTRA_KCFLAGS="$tmp_flags"
+])
+
+dnl #
+dnl # Check whether mutex has owner with task_struct type.
+dnl #
+dnl # Note that before Linux 3.0, mutex owner is of type thread_info.
+dnl #
+dnl # Note that in Linux 3.18, the condition for owner is changed from
+dnl # defined(CONFIG_DEBUG_MUTEXES) || defined(CONFIG_SMP) to
+dnl # defined(CONFIG_DEBUG_MUTEXES) || defined(CONFIG_MUTEX_SPIN_ON_OWNER)
+dnl #
+AC_DEFUN([SPL_AC_MUTEX_OWNER], [
+	AC_MSG_CHECKING([whether mutex has owner])
+	tmp_flags="$EXTRA_KCFLAGS"
+	EXTRA_KCFLAGS="-Werror"
+	SPL_LINUX_TRY_COMPILE([
+		#include <linux/mutex.h>
+		#include <linux/spinlock.h>
+	],[
+		DEFINE_MUTEX(m);
+		struct task_struct *t __attribute__ ((unused));
+		t = m.owner;
+	],[
+		AC_MSG_RESULT(yes)
+		AC_DEFINE(HAVE_MUTEX_OWNER, 1, [yes])
+	],[
+		AC_MSG_RESULT(no)
+	])
+	EXTRA_KCFLAGS="$tmp_flags"
+])
+
+dnl #
+dnl # 4.9 API change
+dnl # group_info changed from 2d array via >blocks to 1d array via ->gid
+dnl #
+AC_DEFUN([SPL_AC_GROUP_INFO_GID], [
+	AC_MSG_CHECKING([whether group_info->gid exists])
+	tmp_flags="$EXTRA_KCFLAGS"
+	EXTRA_KCFLAGS="-Werror"
+	SPL_LINUX_TRY_COMPILE([
+		#include <linux/cred.h>
+	],[
+		struct group_info *gi = groups_alloc(1);
+		gi->gid[0] = KGIDT_INIT(0);
+	],[
+		AC_MSG_RESULT(yes)
+		AC_DEFINE(HAVE_GROUP_INFO_GID, 1, [group_info->gid exists])
+	],[
+		AC_MSG_RESULT(no)
+	])
+	EXTRA_KCFLAGS="$tmp_flags"
 ])
