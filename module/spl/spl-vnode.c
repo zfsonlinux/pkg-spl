@@ -153,7 +153,9 @@ vn_open(const char *path, uio_seg_t seg, int flags, int mode,
 	if (IS_ERR(fp))
 		return (-PTR_ERR(fp));
 
-#ifdef HAVE_2ARGS_VFS_GETATTR
+#if defined(HAVE_4ARGS_VFS_GETATTR)
+	rc = vfs_getattr(&fp->f_path, &stat, STATX_TYPE, AT_STATX_SYNC_AS_STAT);
+#elif defined(HAVE_2ARGS_VFS_GETATTR)
 	rc = vfs_getattr(&fp->f_path, &stat);
 #else
 	rc = vfs_getattr(fp->f_path.mnt, fp->f_dentry, &stat);
@@ -510,7 +512,10 @@ vn_getattr(vnode_t *vp, vattr_t *vap, int flags, void *x3, void *x4)
 
 	fp = vp->v_file;
 
-#ifdef HAVE_2ARGS_VFS_GETATTR
+#if defined(HAVE_4ARGS_VFS_GETATTR)
+	rc = vfs_getattr(&fp->f_path, &stat, STATX_BASIC_STATS,
+	    AT_STATX_SYNC_AS_STAT);
+#elif defined(HAVE_2ARGS_VFS_GETATTR)
 	rc = vfs_getattr(&fp->f_path, &stat);
 #else
 	rc = vfs_getattr(fp->f_path.mnt, fp->f_dentry, &stat);
@@ -708,7 +713,9 @@ vn_getf(int fd)
 	if (vp == NULL)
 		goto out_fget;
 
-#ifdef HAVE_2ARGS_VFS_GETATTR
+#if defined(HAVE_4ARGS_VFS_GETATTR)
+	rc = vfs_getattr(&lfp->f_path, &stat, STATX_TYPE, AT_STATX_SYNC_AS_STAT);
+#elif defined(HAVE_2ARGS_VFS_GETATTR)
 	rc = vfs_getattr(&lfp->f_path, &stat);
 #else
 	rc = vfs_getattr(lfp->f_path.mnt, lfp->f_dentry, &stat);
@@ -897,13 +904,13 @@ spl_vn_init(void)
 				     sizeof(struct vnode), 64,
 	                             vn_cache_constructor,
 				     vn_cache_destructor,
-				     NULL, NULL, NULL, KMC_KMEM);
+				     NULL, NULL, NULL, 0);
 
 	vn_file_cache = kmem_cache_create("spl_vn_file_cache",
 					  sizeof(file_t), 64,
 				          vn_file_cache_constructor,
 				          vn_file_cache_destructor,
-				          NULL, NULL, NULL, KMC_KMEM);
+				          NULL, NULL, NULL, 0);
 	return (0);
 } /* vn_init() */
 
