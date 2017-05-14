@@ -1,3 +1,30 @@
+spl-linux (0.7.0-rc4-1~trusty~1.gbpa38d93) trusty; urgency=low
+
+  ** SNAPSHOT build @a38d9350686392108652c94269911f5dc684761b **
+
+  [ David Quigley ]
+  * Add a PAGESHIFT definition
+
+  [ Chunwei Chen ]
+  * Use kernel slab for vn_cache and vn_file_cache
+
+  [ Olaf Faaland ]
+  * Linux 4.11 compat: set_task_state() removed
+
+  [ Brian Behlendorf ]
+  * Fix powerpc build
+
+  [ Olaf Faaland ]
+  * Linux 4.11 compat: vfs_getattr() takes 4 args
+  * Linux 4.11 compat: add linux/sched/signal.h
+  * Linux 4.11 compat: remove stub for __put_task_struct
+  * glibc 2.25 compat: remove assert(X=Y)
+
+  [ Brian Behlendorf ]
+  * Tag 0.7.0-rc4
+
+ -- Darik Horn <dajhorn@vanadac.com>  Sun, 14 May 2017 11:21:46 -0400
+
 spl-linux (0.7.0-rc3-1~trusty~1.gbp1d1637) trusty; urgency=low
 
   ** SNAPSHOT build @1d16377fa5e47f3c55eaef7a951ebe220d0e0910 **
