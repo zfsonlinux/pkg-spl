@@ -1,3 +1,28 @@
+spl-linux (0.6.5.10-1~trusty) trusty; urgency=low
+
+  [ Olaf Faaland ]
+  * Linux 4.11 compat: set_task_state() removed
+
+  [ Brian Behlendorf ]
+  * Fix powerpc build
+
+  [ Olaf Faaland ]
+  * Linux 4.11 compat: vfs_getattr() takes 4 args
+  * Linux 4.11 compat: add linux/sched/signal.h
+  * Linux 4.11 compat: remove stub for __put_task_struct
+  * glibc 2.25 compat: remove assert(X=Y)
+
+  [ Tim Chase ]
+  * Clear PF_FSTRANS over spl_filp_fallocate()
+
+  [ Chunwei Chen ]
+  * Linux 4.12 compat: PF_FSTRANS was removed
+
+  [ Tony Hutter ]
+  * Prepare to release 0.6.5.10
+
+ -- Darik Horn <dajhorn@vanadac.com>  Sun, 18 Jun 2017 10:36:02 -0400
+
 spl-linux (0.6.5.9-1~trusty) trusty; urgency=low
 
   [ Chunwei Chen ]
