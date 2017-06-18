@@ -156,7 +156,9 @@ vn_open(const char *path, uio_seg_t seg, int flags, int mode,
 	if (IS_ERR(fp))
 		return (-PTR_ERR(fp));
 
-#ifdef HAVE_2ARGS_VFS_GETATTR
+#if defined(HAVE_4ARGS_VFS_GETATTR)
+	rc = vfs_getattr(&fp->f_path, &stat, STATX_TYPE, AT_STATX_SYNC_AS_STAT);
+#elif defined(HAVE_2ARGS_VFS_GETATTR)
 	rc = vfs_getattr(&fp->f_path, &stat);
 #else
 	rc = vfs_getattr(fp->f_path.mnt, fp->f_dentry, &stat);
@@ -514,7 +516,10 @@ vn_getattr(vnode_t *vp, vattr_t *vap, int flags, void *x3, void *x4)
 
 	fp = vp->v_file;
 
-#ifdef HAVE_2ARGS_VFS_GETATTR
+#if defined(HAVE_4ARGS_VFS_GETATTR)
+	rc = vfs_getattr(&fp->f_path, &stat, STATX_BASIC_STATS,
+	    AT_STATX_SYNC_AS_STAT);
+#elif defined(HAVE_2ARGS_VFS_GETATTR)
 	rc = vfs_getattr(&fp->f_path, &stat);
 #else
 	rc = vfs_getattr(fp->f_path.mnt, fp->f_dentry, &stat);
@@ -557,13 +562,13 @@ int vn_fsync(vnode_t *vp, int flags, void *x3, void *x4)
 	 * May enter XFS which generates a warning when PF_FSTRANS is set.
 	 * To avoid this the flag is cleared over vfs_sync() and then reset.
 	 */
-	fstrans = spl_fstrans_check();
+	fstrans = __spl_pf_fstrans_check();
 	if (fstrans)
-		current->flags &= ~(PF_FSTRANS);
+		current->flags &= ~(__SPL_PF_FSTRANS);
 
 	error = -spl_filp_fsync(vp->v_file, datasync);
 	if (fstrans)
-		current->flags |= PF_FSTRANS;
+		current->flags |= __SPL_PF_FSTRANS;
 
 	return (error);
 } /* vn_fsync() */
@@ -573,6 +578,9 @@ int vn_space(vnode_t *vp, int cmd, struct flock *bfp, int flag,
     offset_t offset, void *x6, void *x7)
 {
 	int error = EOPNOTSUPP;
+#ifdef FALLOC_FL_PUNCH_HOLE
+	int fstrans;
+#endif
 
 	if (cmd != F_FREESP || bfp->l_whence != 0)
 		return (EOPNOTSUPP);
@@ -583,12 +591,24 @@ int vn_space(vnode_t *vp, int cmd, struct flock *bfp, int flag,
 
 #ifdef FALLOC_FL_PUNCH_HOLE
 	/*
+	 * May enter XFS which generates a warning when PF_FSTRANS is set.
+	 * To avoid this the flag is cleared over vfs_sync() and then reset.
+	 */
+	fstrans = __spl_pf_fstrans_check();
+	if (fstrans)
+		current->flags &= ~(__SPL_PF_FSTRANS);
+
+	/*
 	 * When supported by the underlying file system preferentially
 	 * use the fallocate() callback to preallocate the space.
 	 */
 	error = -spl_filp_fallocate(vp->v_file,
 	    FALLOC_FL_KEEP_SIZE | FALLOC_FL_PUNCH_HOLE,
 	    bfp->l_start, bfp->l_len);
+
+	if (fstrans)
+		current->flags |= __SPL_PF_FSTRANS;
+
 	if (error == 0)
 		return (0);
 #endif
@@ -684,7 +704,9 @@ vn_getf(int fd)
 	if (vp == NULL)
 		goto out_fget;
 
-#ifdef HAVE_2ARGS_VFS_GETATTR
+#if defined(HAVE_4ARGS_VFS_GETATTR)
+	rc = vfs_getattr(&lfp->f_path, &stat, STATX_TYPE, AT_STATX_SYNC_AS_STAT);
+#elif defined(HAVE_2ARGS_VFS_GETATTR)
 	rc = vfs_getattr(&lfp->f_path, &stat);
 #else
 	rc = vfs_getattr(lfp->f_path.mnt, lfp->f_dentry, &stat);
