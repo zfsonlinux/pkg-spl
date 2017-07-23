@@ -1,3 +1,13 @@
+spl-linux (0.6.5.11-1~trusty) trusty; urgency=low
+
+  [ Chunwei Chen ]
+  * Fix RWSEM_SPINLOCK_IS_RAW check failed
+
+  [ Tony Hutter ]
+  * Prepare to release 0.6.5.11
+
+ -- Darik Horn <dajhorn@vanadac.com>  Sun, 23 Jul 2017 13:35:18 -0400
+
 spl-linux (0.6.5.10-1~trusty) trusty; urgency=low
 
   [ Olaf Faaland ]
